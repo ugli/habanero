@@ -1,4 +1,4 @@
-package se.ugli.habanero.j.internal;
+package se.ugli.habanero.j.typeadaptors;
 
 import se.ugli.habanero.j.TypeAdaptor;
 

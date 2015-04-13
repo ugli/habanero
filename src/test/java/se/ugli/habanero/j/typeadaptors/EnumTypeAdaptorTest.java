@@ -1,4 +1,4 @@
-package se.ugli.habanero.j.internal;
+package se.ugli.habanero.j.typeadaptors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

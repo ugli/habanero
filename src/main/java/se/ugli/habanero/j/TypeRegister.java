@@ -1,12 +1,15 @@
 package se.ugli.habanero.j;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import se.ugli.habanero.j.internal.EnumTypeAdaptor;
-import se.ugli.habanero.j.internal.JdbcTypesAdaptor;
+import se.ugli.habanero.j.typeadaptors.EnumTypeAdaptor;
+import se.ugli.habanero.j.typeadaptors.JdbcTypesAdaptor;
+import se.ugli.habanero.j.typeadaptors.JodaTimeAdaptor;
+import se.ugli.habanero.j.typeadaptors.SerializableTypeAdaptor;
 import se.ugli.habanero.j.util.Option;
 
 public final class TypeRegister {
@@ -15,11 +18,11 @@ public final class TypeRegister {
 
 	}
 
-	private final static List<TypeAdaptor> typeAdaptors = new ArrayList<TypeAdaptor>();
+	private final static List<TypeAdaptor> typeAdaptors = Collections.synchronizedList(new ArrayList<TypeAdaptor>());
 	private final static Map<Class<?>, TypeAdaptor> cache = new ConcurrentHashMap<Class<?>, TypeAdaptor>();
 
 	public static void add(final TypeAdaptor typeAdaptor) {
-		typeAdaptors.add(typeAdaptor);
+		typeAdaptors.add(0, typeAdaptor);
 	}
 
 	public static Option<TypeAdaptor> get(final Class<?> type) {
@@ -35,8 +38,15 @@ public final class TypeRegister {
 	}
 
 	static {
+		add(new SerializableTypeAdaptor());
 		add(new JdbcTypesAdaptor());
 		add(new EnumTypeAdaptor());
+		if (isTypePresent("/org/joda/time/DateTime.class"))
+			add(new JodaTimeAdaptor());
+	}
+
+	private static boolean isTypePresent(final String className) {
+		return TypeRegister.class.getResource(className) != null;
 	}
 
 }
