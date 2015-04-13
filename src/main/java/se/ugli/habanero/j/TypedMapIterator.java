@@ -28,8 +28,8 @@ public abstract class TypedMapIterator<T> extends ResultSetIterator<T> {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((name == null) ? 0 : name.hashCode());
-			result = prime * result + ((table == null) ? 0 : table.hashCode());
+			result = prime * result + (name == null ? 0 : name.hashCode());
+			result = prime * result + (table == null ? 0 : table.hashCode());
 			return result;
 		}
 
@@ -87,8 +87,9 @@ public abstract class TypedMapIterator<T> extends ResultSetIterator<T> {
 	private TypedMap createMap(final Set<Column> columns, final ResultSet resultSet) throws SQLException {
 		final TypedHashMap result = new TypedHashMap();
 		for (final Column column : columns) {
-			result.map.put(column.name, resultSet.getObject(column.getKey()));
-			result.map.put(column.getKey(), resultSet.getObject(column.getKey()));
+			final Object columnValue = resultSet.getObject(column.getKey());
+			result.map.put(column.name, columnValue);
+			result.map.put(column.getKey(), columnValue);
 		}
 		return result;
 	}
