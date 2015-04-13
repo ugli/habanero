@@ -36,9 +36,7 @@ class TypedHashMap implements TypedMap {
 	public <T> T get(final Class<T> type, final String key) {
 		if (type == null)
 			throw new IllegalArgumentException();
-		final Option<TypeAdaptor> typeAdaptorOpt = TypeRegister.get(type);
-		if (typeAdaptorOpt.isDefined())
-			return (T) typeAdaptorOpt.get().toTypeValue(type, get(key));
-		throw new HabaneroException(type.getName() + " isn't registered.");
+		final TypeAdaptor typeAdaptor = Habanero.getTypeAdaptor(type);
+		return (T) typeAdaptor.toTypeValue(type, get(key));
 	}
 }

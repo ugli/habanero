@@ -3,10 +3,8 @@ package se.ugli.habanero.j.internal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import se.ugli.habanero.j.HabaneroException;
+import se.ugli.habanero.j.Habanero;
 import se.ugli.habanero.j.TypeAdaptor;
-import se.ugli.habanero.j.TypeRegister;
-import se.ugli.habanero.j.util.Option;
 
 public class PrepareArgumentsCommand {
 
@@ -28,10 +26,8 @@ public class PrepareArgumentsCommand {
 
 	private Object convertArgument(final Object object) {
 		final Class<?> type = object.getClass();
-		final Option<TypeAdaptor> typeAdaptorOpt = TypeRegister.get(type);
-		if (typeAdaptorOpt.isDefined())
-			return typeAdaptorOpt.get().toJdbcValue(object);
-		throw new HabaneroException(type.getName() + " isn't registered.");
+		final TypeAdaptor typeAdaptor = Habanero.getTypeAdaptor(type);
+		return typeAdaptor.toJdbcValue(object);
 	}
 
 }
