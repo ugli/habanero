@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static se.ugli.habanero.j.internal.CloseUtil.close;
 
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,8 +23,8 @@ public class HabaneroTest {
 	@Before
 	public void setup() throws Exception {
 		final Connection connection = habanero.dataSource.getConnection();
-		final ScriptRunner scriptRunner = new ScriptRunner(connection, true, false);
-		scriptRunner.runScript(new InputStreamReader(getClass().getResourceAsStream("/person.sql")));
+		final SqlScript script = SqlScript.apply(habanero.dataSource);
+		script.run(getClass().getResourceAsStream("/person.sql"));
 		DbUnitLoader.loadFromResource(habanero.dataSource, "/person.xml");
 		close(connection);
 	}
