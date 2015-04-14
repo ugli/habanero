@@ -17,18 +17,13 @@ class DataSourceDelegate implements DataSource {
 	}
 
 	@Override
-	public PrintWriter getLogWriter() throws SQLException {
-		return dataSource.getLogWriter();
+	public Connection getConnection() throws SQLException {
+		return dataSource.getConnection();
 	}
 
 	@Override
-	public void setLogWriter(final PrintWriter out) throws SQLException {
-		dataSource.setLogWriter(out);
-	}
-
-	@Override
-	public void setLoginTimeout(final int seconds) throws SQLException {
-		dataSource.setLoginTimeout(seconds);
+	public Connection getConnection(final String username, final String password) throws SQLException {
+		return dataSource.getConnection(username, password);
 	}
 
 	@Override
@@ -37,13 +32,13 @@ class DataSourceDelegate implements DataSource {
 	}
 
 	@Override
-	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-		return dataSource.getParentLogger();
+	public PrintWriter getLogWriter() throws SQLException {
+		return dataSource.getLogWriter();
 	}
 
 	@Override
-	public <T> T unwrap(final Class<T> iface) throws SQLException {
-		return dataSource.unwrap(iface);
+	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+		return dataSource.getParentLogger();
 	}
 
 	@Override
@@ -52,13 +47,18 @@ class DataSourceDelegate implements DataSource {
 	}
 
 	@Override
-	public Connection getConnection() throws SQLException {
-		return dataSource.getConnection();
+	public void setLoginTimeout(final int seconds) throws SQLException {
+		dataSource.setLoginTimeout(seconds);
 	}
 
 	@Override
-	public Connection getConnection(final String username, final String password) throws SQLException {
-		return dataSource.getConnection(username, password);
+	public void setLogWriter(final PrintWriter out) throws SQLException {
+		dataSource.setLogWriter(out);
+	}
+
+	@Override
+	public <T> T unwrap(final Class<T> iface) throws SQLException {
+		return dataSource.unwrap(iface);
 	}
 
 }

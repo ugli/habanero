@@ -9,9 +9,6 @@ public final class HabaneroProperties {
 
 	public final static String RESOURCE = "/habanero.properties";
 
-	private HabaneroProperties() {
-	}
-
 	public static Properties get() {
 		try {
 			if (ResourceUtil.exists(RESOURCE)) {
@@ -23,6 +20,9 @@ public final class HabaneroProperties {
 		} catch (final IOException e) {
 			throw new HabaneroException(e);
 		}
+	}
+
+	private HabaneroProperties() {
 	}
 
 }

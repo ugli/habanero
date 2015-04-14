@@ -24,19 +24,9 @@ public abstract class GroupFunction<E> {
 		this.columns = createColumnIterable(column1, columns);
 	}
 
-	private Iterable<String> createColumnIterable(final String column1, final String... columns) {
-		final List<String> result = new ArrayList<String>();
-		result.add(column1);
-		for (final String column : columns)
-			result.add(column);
-		return result;
-	}
-
 	public final <F> Iterable<F> group(final GroupContext cxt, final GroupFunction<F> group) {
 		return group.createObjects(cxt.tuples);
 	}
-
-	protected abstract Option<E> createObject(GroupContext cxt, TypedMap typedMap);
 
 	final Iterable<E> createObjects(final Iterable<TypedMap> tuples) {
 		final List<E> result = new ArrayList<E>();
@@ -46,11 +36,12 @@ public abstract class GroupFunction<E> {
 		return result;
 	}
 
-	private final Map<TypedMap, List<TypedMap>> createIndex(final Iterable<TypedMap> tuples) {
-		final Map<TypedMap, List<TypedMap>> result = new LinkedHashMap<TypedMap, List<TypedMap>>();
-		for (final TypedMap tuple : tuples)
-			addTuple(result, tuple);
-		return result;
+	protected abstract Option<E> createObject(GroupContext cxt, TypedMap typedMap);
+
+	private void addCreatedObject(final List<E> result, final TypedMap groupedTypedMap, final GroupContext cxt) {
+		final Option<E> opt = createObject(cxt, groupedTypedMap);
+		if (opt.isDefined())
+			result.add(opt.get());
 	}
 
 	private void addTuple(final Map<TypedMap, List<TypedMap>> result, final TypedMap tuple) {
@@ -60,6 +51,14 @@ public abstract class GroupFunction<E> {
 		result.get(groupedTypeMap).add(tuple);
 	}
 
+	private Iterable<String> createColumnIterable(final String column1, final String... columns) {
+		final List<String> result = new ArrayList<String>();
+		result.add(column1);
+		for (final String column : columns)
+			result.add(column);
+		return result;
+	}
+
 	private TypedHashMap createGroupedTypedMap(final TypedMap tuple) {
 		final TypedHashMap result = new TypedHashMap();
 		for (final String column : columns)
@@ -67,10 +66,11 @@ public abstract class GroupFunction<E> {
 		return result;
 	}
 
-	private void addCreatedObject(final List<E> result, final TypedMap groupedTypedMap, final GroupContext cxt) {
-		final Option<E> opt = createObject(cxt, groupedTypedMap);
-		if (opt.isDefined())
-			result.add(opt.get());
+	private final Map<TypedMap, List<TypedMap>> createIndex(final Iterable<TypedMap> tuples) {
+		final Map<TypedMap, List<TypedMap>> result = new LinkedHashMap<TypedMap, List<TypedMap>>();
+		for (final TypedMap tuple : tuples)
+			addTuple(result, tuple);
+		return result;
 	}
 
 }

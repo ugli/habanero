@@ -9,10 +9,8 @@ import se.ugli.habanero.j.TypeAdaptor;
 public class JodaTimeAdaptor implements TypeAdaptor {
 
 	@Override
-	public Object toTypeValue(final Class<?> type, final Object object) {
-		if (object != null)
-			return new DateTime(object);
-		return null;
+	public boolean supports(final Class<?> type) {
+		return type == DateTime.class;
 	}
 
 	@Override
@@ -21,8 +19,10 @@ public class JodaTimeAdaptor implements TypeAdaptor {
 	}
 
 	@Override
-	public boolean supports(final Class<?> type) {
-		return type == DateTime.class;
+	public Object toTypeValue(final Class<?> type, final Object object) {
+		if (object != null)
+			return new DateTime(object);
+		return null;
 	}
 
 }

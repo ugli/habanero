@@ -8,10 +8,6 @@ import se.ugli.habanero.j.HabaneroException;
 
 public class JndiDataSource extends DataSourceDelegate {
 
-	public JndiDataSource(final String jndiDataSourceName) {
-		super(lookupDataSource(jndiDataSourceName));
-	}
-
 	private static DataSource lookupDataSource(final String jndiDataSourceName) {
 		try {
 			final InitialContext context = new InitialContext();
@@ -19,6 +15,10 @@ public class JndiDataSource extends DataSourceDelegate {
 		} catch (final NamingException e) {
 			throw new HabaneroException(e);
 		}
+	}
+
+	public JndiDataSource(final String jndiDataSourceName) {
+		super(lookupDataSource(jndiDataSourceName));
 	}
 
 }

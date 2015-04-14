@@ -90,4 +90,7 @@ public final class Base64Util {
 		return result;
 	}
 
+	private Base64Util() {
+	}
+
 }

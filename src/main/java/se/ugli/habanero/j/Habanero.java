@@ -14,9 +14,10 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import se.ugli.habanero.j.datasource.H2DataSource;
-import se.ugli.habanero.j.internal.ResourceUtil;
 import se.ugli.habanero.j.internal.PrepareArgumentsCommand;
+import se.ugli.habanero.j.internal.ResourceUtil;
 import se.ugli.habanero.j.internal.SingleValueIterator;
+import se.ugli.habanero.j.internal.TypedMapIdentityIterator;
 import se.ugli.habanero.j.typeadaptors.EnumTypeAdaptor;
 import se.ugli.habanero.j.typeadaptors.JdbcTypesAdaptor;
 import se.ugli.habanero.j.typeadaptors.JodaTimeAdaptor;
@@ -33,20 +34,20 @@ public final class Habanero {
 			register(new JodaTimeAdaptor());
 	}
 
-	public static void register(final TypeAdaptor typeAdaptor) {
-		TypeRegister.add(typeAdaptor);
-	}
-
-	public static TypeAdaptor getTypeAdaptor(final Class<?> type) {
-		return TypeRegister.get(type);
+	public static Habanero apply() {
+		return new Habanero(new H2DataSource());
 	}
 
 	public static Habanero apply(final DataSource dataSource) {
 		return new Habanero(dataSource);
 	}
 
-	public static Habanero apply() {
-		return new Habanero(new H2DataSource());
+	public static TypeAdaptor getTypeAdaptor(final Class<?> type) {
+		return TypeRegister.get(type);
+	}
+
+	public static void register(final TypeAdaptor typeAdaptor) {
+		TypeRegister.add(typeAdaptor);
 	}
 
 	public final DataSource dataSource;
@@ -55,17 +56,22 @@ public final class Habanero {
 		this.dataSource = dataSource;
 	}
 
-	public <T> Iterable<T> queryMany(final Class<T> type, final String sql, final Object... args) {
-		return queryMany(new SingleValueIterator<T>(type), sql, args);
+	public boolean execute(final String sql) {
+		Connection connection = null;
+		PreparedStatement statement = null;
+		try {
+			connection = dataSource.getConnection();
+			statement = connection.prepareStatement(sql);
+			return statement.execute();
+		} catch (final SQLException e) {
+			throw new HabaneroException(e);
+		} finally {
+			close(statement, connection);
+		}
 	}
 
-	private static class TypedMapIdentityIterator extends TypedMapIterator<TypedMap> {
-
-		@Override
-		protected TypedMap nextObject(final TypedMap typedMap) {
-			return typedMap;
-		}
-
+	public <T> Iterable<T> queryMany(final Class<T> type, final String sql, final Object... args) {
+		return queryMany(new SingleValueIterator<T>(type), sql, args);
 	}
 
 	public <T> Iterable<T> queryMany(final GroupFunction<T> groupFunction, final String sql, final Object... args) {
@@ -122,20 +128,6 @@ public final class Habanero {
 			statement = connection.prepareStatement(sql);
 			PrepareArgumentsCommand.apply(statement).exec(args);
 			return statement.executeUpdate();
-		} catch (final SQLException e) {
-			throw new HabaneroException(e);
-		} finally {
-			close(statement, connection);
-		}
-	}
-
-	public boolean execute(final String sql) {
-		Connection connection = null;
-		PreparedStatement statement = null;
-		try {
-			connection = dataSource.getConnection();
-			statement = connection.prepareStatement(sql);
-			return statement.execute();
 		} catch (final SQLException e) {
 			throw new HabaneroException(e);
 		} finally {

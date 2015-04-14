@@ -77,17 +77,11 @@ public class JdbcDataSourceBuilder {
 
 	}
 
-	private static Map<String, Class<?>> driverClassNameCache = new ConcurrentHashMap<String, Class<?>>();
 	private static Map<Class<?>, Driver> driverClassCache = new ConcurrentHashMap<Class<?>, Driver>();
+	private static Map<String, Class<?>> driverClassNameCache = new ConcurrentHashMap<String, Class<?>>();
 
-	private static Class<?> createDriverClass(final String driverClassName) {
-		try {
-			if (!driverClassNameCache.containsKey(driverClassName))
-				driverClassNameCache.put(driverClassName, Class.forName(driverClassName));
-			return driverClassNameCache.get(driverClassName);
-		} catch (final ClassNotFoundException e) {
-			throw new HabaneroException(e);
-		}
+	public static JdbcDataSourceBuilder url(final String url) {
+		return new JdbcDataSourceBuilder(url);
 	}
 
 	private static Driver createDriver(final Class<?> driverClass) {
@@ -102,51 +96,26 @@ public class JdbcDataSourceBuilder {
 		}
 	}
 
-	public static JdbcDataSourceBuilder url(final String url) {
-		return new JdbcDataSourceBuilder(url);
+	private static Class<?> createDriverClass(final String driverClassName) {
+		try {
+			if (!driverClassNameCache.containsKey(driverClassName))
+				driverClassNameCache.put(driverClassName, Class.forName(driverClassName));
+			return driverClassNameCache.get(driverClassName);
+		} catch (final ClassNotFoundException e) {
+			throw new HabaneroException(e);
+		}
 	}
 
+	private Driver driver;
+	private Class<?> driverClass;
+	private String driverClassName;
+
+	private String password;
 	private final String url;
 	private String user;
-	private String password;
-
-	private String driverClassName;
-	private Class<?> driverClass;
-	private Driver driver;
 
 	private JdbcDataSourceBuilder(final String url) {
 		this.url = url;
-	}
-
-	public JdbcDataSourceBuilder password(final String password) {
-		this.password = password;
-		return this;
-	}
-
-	public JdbcDataSourceBuilder user(final String user) {
-		this.user = user;
-		return this;
-	}
-
-	public JdbcDataSourceBuilder driverClassName(final String driverClassName) {
-		this.driverClassName = driverClassName;
-		driverClass = null;
-		driver = null;
-		return this;
-	}
-
-	public JdbcDataSourceBuilder driverClass(final Class<?> driverClass) {
-		driverClassName = null;
-		this.driverClass = driverClass;
-		driver = null;
-		return this;
-	}
-
-	public JdbcDataSourceBuilder driver(final Driver driver) {
-		driverClassName = null;
-		driverClass = null;
-		this.driver = driver;
-		return this;
 	}
 
 	public DataSource build() {
@@ -161,5 +130,36 @@ public class JdbcDataSourceBuilder {
 		} catch (final SQLException e) {
 			throw new HabaneroException(e);
 		}
+	}
+
+	public JdbcDataSourceBuilder driver(final Driver driver) {
+		driverClassName = null;
+		driverClass = null;
+		this.driver = driver;
+		return this;
+	}
+
+	public JdbcDataSourceBuilder driverClass(final Class<?> driverClass) {
+		driverClassName = null;
+		this.driverClass = driverClass;
+		driver = null;
+		return this;
+	}
+
+	public JdbcDataSourceBuilder driverClassName(final String driverClassName) {
+		this.driverClassName = driverClassName;
+		driverClass = null;
+		driver = null;
+		return this;
+	}
+
+	public JdbcDataSourceBuilder password(final String password) {
+		this.password = password;
+		return this;
+	}
+
+	public JdbcDataSourceBuilder user(final String user) {
+		this.user = user;
+		return this;
 	}
 }

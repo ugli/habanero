@@ -10,12 +10,8 @@ import se.ugli.habanero.j.internal.ResourceUtil;
 
 public class PooledDataSource extends DataSourceDelegate {
 
-	private PooledDataSource(final DataSource dataSource) {
-		super(dataSource);
-	}
-
 	public static enum Implementation {
-		HikariCP, BoneCP, C3P0, Vibur, DBCP
+		BoneCP, C3P0, DBCP, HikariCP, Vibur
 	}
 
 	public static DataSource apply() {
@@ -52,5 +48,9 @@ public class PooledDataSource extends DataSourceDelegate {
 		else if (implementation == Implementation.DBCP)
 			return new PooledDataSource(DBCPDataSourceFactory.create(properties));
 		throw new IllegalArgumentException(implementation.name());
+	}
+
+	private PooledDataSource(final DataSource dataSource) {
+		super(dataSource);
 	}
 }

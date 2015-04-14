@@ -9,8 +9,8 @@ import se.ugli.habanero.j.TypeAdaptor;
 
 public class SingleValueIterator<T> extends ResultSetIterator<T> {
 
-	private final TypeAdaptor typeAdaptor;
 	private final Class<T> type;
+	private final TypeAdaptor typeAdaptor;
 
 	public SingleValueIterator(final Class<T> type) {
 		if (type == null)

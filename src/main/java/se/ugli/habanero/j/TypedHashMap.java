@@ -9,9 +9,13 @@ class TypedHashMap implements TypedMap {
 
 	final Map<String, Object> map = new HashMap<String, Object>();
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Iterable<String> keys() {
-		return map.keySet();
+	public <T> T get(final Class<T> type, final String key) {
+		if (type == null)
+			throw new IllegalArgumentException();
+		final TypeAdaptor typeAdaptor = Habanero.getTypeAdaptor(type);
+		return (T) typeAdaptor.toTypeValue(type, get(key));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -21,22 +25,17 @@ class TypedHashMap implements TypedMap {
 	}
 
 	@Override
-	public <T> Option<T> getOption(final String key) {
-		final T object = get(key);
-		return Option.apply(object);
-	}
-
-	@Override
 	public <T> Option<T> getOption(final Class<T> type, final String key) {
 		return Option.apply(get(type, key));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T get(final Class<T> type, final String key) {
-		if (type == null)
-			throw new IllegalArgumentException();
-		final TypeAdaptor typeAdaptor = Habanero.getTypeAdaptor(type);
-		return (T) typeAdaptor.toTypeValue(type, get(key));
+	public <T> Option<T> getOption(final String key) {
+		return Option.apply(this.<T> get(key));
+	}
+
+	@Override
+	public Iterable<String> keys() {
+		return map.keySet();
 	}
 }

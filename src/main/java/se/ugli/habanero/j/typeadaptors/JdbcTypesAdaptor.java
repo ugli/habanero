@@ -31,8 +31,8 @@ public class JdbcTypesAdaptor implements TypeAdaptor {
 	}
 
 	@Override
-	public Object toTypeValue(final Class<?> type, final Object object) {
-		return object;
+	public boolean supports(final Class<?> type) {
+		return CLASS_SET.contains(type);
 	}
 
 	@Override
@@ -41,8 +41,8 @@ public class JdbcTypesAdaptor implements TypeAdaptor {
 	}
 
 	@Override
-	public boolean supports(final Class<?> type) {
-		return CLASS_SET.contains(type);
+	public Object toTypeValue(final Class<?> type, final Object object) {
+		return object;
 	}
 
 }

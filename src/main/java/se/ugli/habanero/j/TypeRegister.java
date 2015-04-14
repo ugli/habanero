@@ -8,12 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 final class TypeRegister {
 
-	private TypeRegister() {
-
-	}
+	private final static Map<Class<?>, TypeAdaptor> cache = new ConcurrentHashMap<Class<?>, TypeAdaptor>();
 
 	private final static List<TypeAdaptor> typeAdaptors = Collections.synchronizedList(new ArrayList<TypeAdaptor>());
-	private final static Map<Class<?>, TypeAdaptor> cache = new ConcurrentHashMap<Class<?>, TypeAdaptor>();
 
 	static void add(final TypeAdaptor typeAdaptor) {
 		typeAdaptors.add(0, typeAdaptor);
@@ -29,6 +26,9 @@ final class TypeRegister {
 				return typeAdaptor;
 			}
 		throw new HabaneroException(type.getName() + " isn't registered.");
+	}
+
+	private TypeRegister() {
 	}
 
 }
