@@ -1,9 +1,11 @@
 package se.ugli.habanero.j.internal;
 
+import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import se.ugli.habanero.j.Habanero;
+import se.ugli.habanero.j.OutParam;
 import se.ugli.habanero.j.TypeAdaptor;
 
 public class PrepareArgumentsCommand {
@@ -21,7 +23,12 @@ public class PrepareArgumentsCommand {
 	public void exec(final Object... args) throws SQLException {
 		int parameterIndex = 1;
 		for (final Object arg : args)
-			statement.setObject(parameterIndex++, convertArgument(arg));
+			if (arg instanceof OutParam && statement instanceof CallableStatement) {
+				final OutParam outParam = (OutParam) arg;
+				final CallableStatement callableStatement = (CallableStatement) statement;
+				callableStatement.registerOutParameter(parameterIndex, outParam.sqlType);
+			} else
+				statement.setObject(parameterIndex++, convertArgument(arg));
 	}
 
 	private Object convertArgument(final Object object) {
