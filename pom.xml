@@ -6,7 +6,7 @@
 	<artifactId>habanero-java</artifactId>
 	<packaging>jar</packaging>
 	<name>Habanero for Java</name>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<description>Habanero for Java</description>
 	<url>https://github.com/ugli/habanero-java</url>
 	<licenses>
@@ -20,7 +20,7 @@
 		<connection>scm:git:git@github.com:ugli/habanero-java.git</connection>
 		<developerConnection>scm:git:git@github.com:ugli/habanero-java.git</developerConnection>
 		<url>git@github.com:ugli/habanero-java.git</url>
-		<tag>habanero-java-1.0.0</tag>
+		<tag>habanero-java-1.1.0</tag>
 	</scm>
 	<developers>
 		<developer>
@@ -30,6 +30,36 @@
 		</developer>
 	</developers>
 	<dependencies>
+		<dependency>
+			<groupId>com.jolbox</groupId>
+			<artifactId>bonecp</artifactId>
+			<version>0.8.0.RELEASE</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP-java6</artifactId>
+			<version>2.3.6</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>c3p0</groupId>
+			<artifactId>c3p0</artifactId>
+			<version>0.9.1.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.vibur</groupId>
+			<artifactId>vibur-dbcp</artifactId>
+			<version>1.2.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.4</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>

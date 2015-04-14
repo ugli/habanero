@@ -14,7 +14,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import se.ugli.habanero.j.datasource.H2DataSource;
-import se.ugli.habanero.j.internal.ClassUtil;
+import se.ugli.habanero.j.internal.ResourceUtil;
 import se.ugli.habanero.j.internal.PrepareArgumentsCommand;
 import se.ugli.habanero.j.internal.SingleValueIterator;
 import se.ugli.habanero.j.typeadaptors.EnumTypeAdaptor;
@@ -29,7 +29,7 @@ public final class Habanero {
 		register(new SerializableTypeAdaptor());
 		register(new JdbcTypesAdaptor());
 		register(new EnumTypeAdaptor());
-		if (ClassUtil.isTypePresent("/org/joda/time/DateTime.class"))
+		if (ResourceUtil.exists("/org/joda/time/DateTime.class"))
 			register(new JodaTimeAdaptor());
 	}
 
