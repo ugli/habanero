@@ -20,7 +20,9 @@ import se.ugli.habanero.j.internal.PrepareArgumentsCommand;
 import se.ugli.habanero.j.internal.ResourceUtil;
 import se.ugli.habanero.j.internal.SingleValueIterator;
 import se.ugli.habanero.j.internal.TypedMapIdentityIterator;
+import se.ugli.habanero.j.typeadaptors.BooleanTypeAdaptor;
 import se.ugli.habanero.j.typeadaptors.EnumTypeAdaptor;
+import se.ugli.habanero.j.typeadaptors.IdTypeAdaptor;
 import se.ugli.habanero.j.typeadaptors.JdbcTypesAdaptor;
 import se.ugli.habanero.j.typeadaptors.JodaTimeAdaptor;
 import se.ugli.habanero.j.typeadaptors.SerializableTypeAdaptor;
@@ -30,7 +32,9 @@ public final class Habanero {
 	static {
 		register(new SerializableTypeAdaptor());
 		register(new JdbcTypesAdaptor());
+		register(new BooleanTypeAdaptor());
 		register(new EnumTypeAdaptor());
+		register(new IdTypeAdaptor());
 		if (ResourceUtil.exists("/org/joda/time/DateTime.class"))
 			register(new JodaTimeAdaptor());
 	}
