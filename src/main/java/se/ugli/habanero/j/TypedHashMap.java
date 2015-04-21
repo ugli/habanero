@@ -3,7 +3,7 @@ package se.ugli.habanero.j;
 import java.util.HashMap;
 import java.util.Map;
 
-import se.ugli.habanero.j.util.Option;
+import se.ugli.commons.Option;
 
 class TypedHashMap implements TypedMap {
 

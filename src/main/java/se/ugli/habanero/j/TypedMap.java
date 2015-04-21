@@ -1,6 +1,6 @@
 package se.ugli.habanero.j;
 
-import se.ugli.habanero.j.util.Option;
+import se.ugli.commons.Option;
 
 public interface TypedMap {
 

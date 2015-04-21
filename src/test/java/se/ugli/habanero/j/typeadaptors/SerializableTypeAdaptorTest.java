@@ -8,8 +8,8 @@ import java.awt.Point;
 
 import org.junit.Test;
 
+import se.ugli.commons.Option;
 import se.ugli.habanero.j.Habanero;
-import se.ugli.habanero.j.util.Option;
 
 public class SerializableTypeAdaptorTest {
 

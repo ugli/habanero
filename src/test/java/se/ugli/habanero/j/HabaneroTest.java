@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import org.junit.Before;
 import org.junit.Test;
 
-import se.ugli.habanero.j.util.Option;
+import se.ugli.commons.Option;
 
 import com.google.common.collect.Iterables;
 

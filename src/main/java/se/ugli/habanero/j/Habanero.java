@@ -14,6 +14,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import se.ugli.commons.Option;
 import se.ugli.habanero.j.datasource.H2DataSource;
 import se.ugli.habanero.j.internal.PrepareArgumentsCommand;
 import se.ugli.habanero.j.internal.ResourceUtil;
@@ -23,7 +24,6 @@ import se.ugli.habanero.j.typeadaptors.EnumTypeAdaptor;
 import se.ugli.habanero.j.typeadaptors.JdbcTypesAdaptor;
 import se.ugli.habanero.j.typeadaptors.JodaTimeAdaptor;
 import se.ugli.habanero.j.typeadaptors.SerializableTypeAdaptor;
-import se.ugli.habanero.j.util.Option;
 
 public final class Habanero {
 

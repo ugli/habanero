@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import se.ugli.habanero.j.util.Option;
+import se.ugli.commons.Option;
 
 public abstract class GroupFunction<E> {
 
