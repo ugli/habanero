@@ -21,7 +21,9 @@ class TypedHashMap implements TypedMap {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T get(final String key) {
-		return (T) map.get(key);
+		if (key == null)
+			throw new IllegalArgumentException();
+		return (T) map.get(key.toLowerCase());
 	}
 
 	@Override
