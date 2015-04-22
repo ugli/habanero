@@ -56,7 +56,9 @@ public abstract class TypedMapIterator<T> extends ResultSetIterator<T> {
 		}
 
 		String getKey() {
-			return table + "." + name;
+			if (table != null && !table.trim().isEmpty())
+				return table + "." + name;
+			return name;
 		}
 
 	}
