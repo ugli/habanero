@@ -26,6 +26,11 @@ public abstract class ResultSetIterator<E> implements Iterator<E> {
 		}
 	}
 
+	@Override
+	public final void remove() {
+		throw new UnsupportedOperationException("remove");
+	}
+
 	final void init(final ResultSet resultSet) throws SQLException {
 		this.resultSet = resultSet;
 		postInit(resultSet);
