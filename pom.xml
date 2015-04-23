@@ -6,7 +6,7 @@
 	<artifactId>habanero-java</artifactId>
 	<packaging>jar</packaging>
 	<name>Habanero for Java</name>
-	<version>1.1.6</version>
+	<version>1.1.7</version>
 	<description>Habanero for Java</description>
 	<url>https://github.com/ugli/habanero-java</url>
 	<licenses>
@@ -20,7 +20,7 @@
 		<connection>scm:git:git@github.com:ugli/habanero-java.git</connection>
 		<developerConnection>scm:git:git@github.com:ugli/habanero-java.git</developerConnection>
 		<url>git@github.com:ugli/habanero-java.git</url>
-		<tag>v1.1.6</tag>
+		<tag>v1.1.7</tag>
 	</scm>
 	<developers>
 		<developer>

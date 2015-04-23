@@ -30,22 +30,25 @@ public abstract class GroupFunction<E> {
 
 	final Iterable<E> createObjects(final Iterable<TypedMap> tuples) {
 		final List<E> result = new ArrayList<E>();
-		final Map<TypedMap, List<TypedMap>> index = createIndex(tuples);
-		for (final TypedMap groupedTypedMap : index.keySet())
-			addCreatedObject(result, groupedTypedMap, new GroupContext(index.get(groupedTypedMap)));
+		final Map<String, List<TypedMap>> index = createIndex(tuples);
+		for (final String groupedKey : index.keySet()) {
+			final List<TypedMap> groupedTuples = index.get(groupedKey);
+			final TypedMap firstTuple = groupedTuples.get(0);
+			addCreatedObject(result, firstTuple, new GroupContext(groupedTuples));
+		}
 		return result;
 	}
 
 	protected abstract Option<E> createObject(GroupContext cxt, TypedMap typedMap);
 
-	private void addCreatedObject(final List<E> result, final TypedMap groupedTypedMap, final GroupContext cxt) {
-		final Option<E> opt = createObject(cxt, groupedTypedMap);
+	private void addCreatedObject(final List<E> result, final TypedMap typeMap, final GroupContext cxt) {
+		final Option<E> opt = createObject(cxt, typeMap);
 		if (opt.isDefined())
 			result.add(opt.get());
 	}
 
-	private void addTuple(final Map<TypedMap, List<TypedMap>> result, final TypedMap tuple) {
-		final TypedHashMap groupedTypeMap = createGroupedTypedMap(tuple);
+	private void addTuple(final Map<String, List<TypedMap>> result, final TypedMap tuple) {
+		final String groupedTypeMap = createGroupKey(tuple);
 		if (!result.containsKey(groupedTypeMap))
 			result.put(groupedTypeMap, new ArrayList<TypedMap>());
 		result.get(groupedTypeMap).add(tuple);
@@ -59,15 +62,17 @@ public abstract class GroupFunction<E> {
 		return result;
 	}
 
-	private TypedHashMap createGroupedTypedMap(final TypedMap tuple) {
-		final TypedHashMap result = new TypedHashMap();
-		for (final String column : columns)
-			result.put(column, tuple.get(column));
-		return result;
+	private String createGroupKey(final TypedMap tuple) {
+		final StringBuilder result = new StringBuilder();
+		for (final String column : columns) {
+			result.append(column);
+			result.append(tuple.get(column));
+		}
+		return result.toString();
 	}
 
-	private final Map<TypedMap, List<TypedMap>> createIndex(final Iterable<TypedMap> tuples) {
-		final Map<TypedMap, List<TypedMap>> result = new LinkedHashMap<TypedMap, List<TypedMap>>();
+	private final Map<String, List<TypedMap>> createIndex(final Iterable<TypedMap> tuples) {
+		final Map<String, List<TypedMap>> result = new LinkedHashMap<String, List<TypedMap>>();
 		for (final TypedMap tuple : tuples)
 			addTuple(result, tuple);
 		return result;
