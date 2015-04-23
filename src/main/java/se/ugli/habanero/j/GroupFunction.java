@@ -62,7 +62,7 @@ public abstract class GroupFunction<E> {
 	private TypedHashMap createGroupedTypedMap(final TypedMap tuple) {
 		final TypedHashMap result = new TypedHashMap();
 		for (final String column : columns)
-			result.map.put(column, tuple.get(column));
+			result.put(column, tuple.get(column));
 		return result;
 	}
 

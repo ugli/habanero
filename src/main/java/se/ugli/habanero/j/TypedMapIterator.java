@@ -35,7 +35,7 @@ public abstract class TypedMapIterator<T> extends ResultSetIterator<T> {
 		final TypedHashMap result = new TypedHashMap();
 		for (final String column : columns) {
 			final Object columnValue = resultSet.getObject(column);
-			result.map.put(column, columnValue);
+			result.put(column, columnValue);
 		}
 		return result;
 	}

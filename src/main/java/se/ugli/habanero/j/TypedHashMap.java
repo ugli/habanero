@@ -7,7 +7,12 @@ import se.ugli.commons.Option;
 
 class TypedHashMap implements TypedMap {
 
-	final Map<String, Object> map = new HashMap<String, Object>();
+	private final Map<String, Object> map = new HashMap<String, Object>();
+
+	@Override
+	public boolean equals(final Object obj) {
+		return map.equals(obj);
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -37,7 +42,22 @@ class TypedHashMap implements TypedMap {
 	}
 
 	@Override
+	public int hashCode() {
+		return map.hashCode();
+	}
+
+	@Override
 	public Iterable<String> keys() {
 		return map.keySet();
 	}
+
+	@Override
+	public String toString() {
+		return map.toString();
+	}
+
+	Object put(final String key, final Object value) {
+		return map.put(key, value);
+	}
+
 }
