@@ -188,4 +188,10 @@ public class HabaneroTest {
 	public void shoulUpdateSqlError() {
 		habanero.update("delete from persons where name=?", "ubbe");
 	}
+
+	@Test
+	public void shoulUpdateWithNullValue() {
+		assertEquals(1, habanero.update("insert into person(name,age) values(?,?)", "urban", null));
+		assertFalse(habanero.queryOne(Integer.class, "select age from person where name=?", "urban").isDefined());
+	}
 }

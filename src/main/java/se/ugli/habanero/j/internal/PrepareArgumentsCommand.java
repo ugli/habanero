@@ -32,9 +32,11 @@ public class PrepareArgumentsCommand {
 	}
 
 	private Object convertArgument(final Object object) {
-		final Class<?> type = object.getClass();
-		final TypeAdaptor typeAdaptor = Habanero.getTypeAdaptor(type);
-		return typeAdaptor.toJdbcValue(object);
+		if (object != null) {
+			final Class<?> type = object.getClass();
+			final TypeAdaptor typeAdaptor = Habanero.getTypeAdaptor(type);
+			return typeAdaptor.toJdbcValue(object);
+		}
+		return null;
 	}
-
 }
