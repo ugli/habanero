@@ -3,16 +3,18 @@ package se.ugli.habanero.j;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static se.ugli.habanero.j.internal.CloseUtil.close;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import se.ugli.commons.Option;
+import se.ugli.commons.Resource;
+import se.ugli.habanero.j.dataset.DataSet;
 
 import com.google.common.collect.Iterables;
 
@@ -22,11 +24,9 @@ public class HabaneroTest {
 
 	@Before
 	public void setup() throws Exception {
-		final Connection connection = habanero.dataSource.getConnection();
-		final SqlScript script = SqlScript.apply(habanero.dataSource);
-		script.run(getClass().getResourceAsStream("/person.sql"));
-		DbUnitLoader.loadFromResource(habanero.dataSource, "/person.xml");
-		close(connection);
+		final DataSource dataSource = habanero.dataSource;
+		SqlScript.apply(dataSource).run(Resource.apply("/person.sql"));
+		DataSet.apply(dataSource).exec(Resource.apply("/person.xml"));
 	}
 
 	@Test

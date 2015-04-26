@@ -10,7 +10,8 @@ import java.util.Scanner;
 
 import javax.sql.DataSource;
 
-import se.ugli.habanero.j.internal.CloseUtil;
+import se.ugli.commons.CloseCommand;
+import se.ugli.commons.Resource;
 
 public class SqlScript {
 
@@ -53,6 +54,10 @@ public class SqlScript {
 		run(new Scanner(source));
 	}
 
+	public void run(final Resource resource) {
+		run(resource.getInputStream());
+	}
+
 	public void run(final InputStream source, final String charsetName) {
 		run(new Scanner(source, charsetName));
 	}
@@ -76,7 +81,7 @@ public class SqlScript {
 		} catch (final SQLException e) {
 			throw new HabaneroException(e);
 		} finally {
-			CloseUtil.close(statement, connection, scanner);
+			CloseCommand.execute(statement, connection, scanner);
 		}
 	}
 

@@ -1,7 +1,5 @@
 package se.ugli.habanero.j;
 
-import static se.ugli.habanero.j.internal.CloseUtil.close;
-
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,10 +12,11 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import se.ugli.commons.CloseCommand;
 import se.ugli.commons.Option;
+import se.ugli.commons.Resource;
 import se.ugli.habanero.j.datasource.H2DataSource;
 import se.ugli.habanero.j.internal.PrepareArgumentsCommand;
-import se.ugli.habanero.j.internal.ResourceUtil;
 import se.ugli.habanero.j.internal.SingleValueIterator;
 import se.ugli.habanero.j.internal.TypedMapIdentityIterator;
 import se.ugli.habanero.j.typeadaptors.BooleanTypeAdaptor;
@@ -35,7 +34,7 @@ public final class Habanero {
 		register(new BooleanTypeAdaptor());
 		register(new EnumTypeAdaptor());
 		register(new IdTypeAdaptor());
-		if (ResourceUtil.exists("/org/joda/time/DateTime.class"))
+		if (Resource.classExists("org.joda.time.DateTime"))
 			register(new JodaTimeAdaptor());
 	}
 
@@ -71,7 +70,7 @@ public final class Habanero {
 		} catch (final SQLException e) {
 			throw new HabaneroException(e);
 		} finally {
-			close(statement, connection);
+			CloseCommand.execute(statement, connection);
 		}
 	}
 
@@ -85,7 +84,7 @@ public final class Habanero {
 		} catch (final SQLException e) {
 			throw new HabaneroException(e);
 		} finally {
-			close(statement, connection);
+			CloseCommand.execute(statement, connection);
 		}
 	}
 
@@ -115,7 +114,7 @@ public final class Habanero {
 		} catch (final SQLException e) {
 			throw new HabaneroException(e);
 		} finally {
-			close(resultSet, statement, connection);
+			CloseCommand.execute(resultSet, statement, connection);
 		}
 	}
 
@@ -145,7 +144,7 @@ public final class Habanero {
 		} catch (final SQLException e) {
 			throw new HabaneroException(e);
 		} finally {
-			close(resultSet, statement, connection);
+			CloseCommand.execute(resultSet, statement, connection);
 		}
 	}
 
@@ -201,7 +200,7 @@ public final class Habanero {
 		} catch (final SQLException e) {
 			throw new HabaneroException(e);
 		} finally {
-			close(statement, connection);
+			CloseCommand.execute(statement, connection);
 		}
 	}
 
@@ -216,7 +215,7 @@ public final class Habanero {
 		} catch (final SQLException e) {
 			throw new HabaneroException(e);
 		} finally {
-			close(statement, connection);
+			CloseCommand.execute(statement, connection);
 		}
 	}
 

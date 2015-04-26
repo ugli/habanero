@@ -1,5 +1,5 @@
 create table person(
-	name VARCHAR(30),
+	name VARCHAR(30) PRIMARY KEY,
 	age INT
 );
 

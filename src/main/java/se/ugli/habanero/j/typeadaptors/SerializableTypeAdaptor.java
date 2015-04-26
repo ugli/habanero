@@ -7,10 +7,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import se.ugli.commons.CloseCommand;
 import se.ugli.habanero.j.HabaneroException;
 import se.ugli.habanero.j.TypeAdaptor;
 import se.ugli.habanero.j.internal.Base64Util;
-import se.ugli.habanero.j.internal.CloseUtil;
 
 public class SerializableTypeAdaptor implements TypeAdaptor {
 
@@ -31,7 +31,7 @@ public class SerializableTypeAdaptor implements TypeAdaptor {
 			} catch (final IOException e) {
 				throw new HabaneroException(e);
 			} finally {
-				CloseUtil.close(baos);
+				CloseCommand.execute(baos);
 			}
 		}
 		return null;
@@ -50,7 +50,7 @@ public class SerializableTypeAdaptor implements TypeAdaptor {
 			} catch (final ClassNotFoundException e) {
 				throw new HabaneroException(e);
 			} finally {
-				CloseUtil.close(stream);
+				CloseCommand.execute(stream);
 			}
 		}
 		return null;
