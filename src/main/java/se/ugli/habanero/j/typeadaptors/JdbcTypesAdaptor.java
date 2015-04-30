@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import se.ugli.habanero.j.TypeAdaptor;
+import se.ugli.habanero.j.internal.ClobReader;
 
 public class JdbcTypesAdaptor implements TypeAdaptor {
 
@@ -42,6 +43,8 @@ public class JdbcTypesAdaptor implements TypeAdaptor {
 
 	@Override
 	public Object toTypeValue(final Class<?> type, final Object object) {
+		if (object instanceof Clob)
+			return ClobReader.read((Clob) object);
 		return object;
 	}
 
