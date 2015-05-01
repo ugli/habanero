@@ -38,6 +38,14 @@ public class SerializableTypeAdaptor implements TypeAdaptor {
 	}
 
 	@Override
+	public String toSqlStr(final Object object) {
+		final Object jdbcValue = toJdbcValue(object);
+		if (jdbcValue == null)
+			return "null";
+		return "'" + jdbcValue + "'";
+	}
+
+	@Override
 	public Object toTypeValue(final Class<?> type, final Object object) {
 		if (object != null) {
 			ObjectInputStream stream = null;

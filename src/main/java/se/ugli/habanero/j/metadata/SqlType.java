@@ -1,8 +1,8 @@
-package se.ugli.habanero.j;
+package se.ugli.habanero.j.metadata;
 
 import java.sql.Types;
 
-public enum OutParam {
+public enum SqlType {
 	ARRAY(Types.ARRAY),
 	BIGINT(Types.BIGINT),
 	BINARY(Types.BINARY),
@@ -45,10 +45,17 @@ public enum OutParam {
 	// public static final int TIME_WITH_TIMEZONE = 2013;
 	// public static final int TIMESTAMP_WITH_TIMEZONE = 2014;
 
-	public final int sqlType;
+	public final int typeNumber;
 
-	private OutParam(final int sqlType) {
-		this.sqlType = sqlType;
+	private SqlType(final int typeNumber) {
+		this.typeNumber = typeNumber;
+	}
+
+	public static SqlType applyTypeNumber(final int typeNumber) {
+		for (final SqlType sqlType : values())
+			if (sqlType.typeNumber == typeNumber)
+				return sqlType;
+		throw new IllegalStateException();
 	}
 
 }

@@ -1,12 +1,15 @@
 package se.ugli.habanero.j.typeadaptors;
 
-import se.ugli.habanero.j.TypeAdaptor;
+import java.sql.Clob;
 
-public class BooleanTypeAdaptor implements TypeAdaptor {
+import se.ugli.habanero.j.TypeAdaptor;
+import se.ugli.habanero.j.internal.ClobReader;
+
+public class ClobTypeAdaptor implements TypeAdaptor {
 
 	@Override
 	public boolean supports(final Class<?> type) {
-		return type == Boolean.class;
+		return type == Clob.class;
 	}
 
 	@Override
@@ -16,18 +19,12 @@ public class BooleanTypeAdaptor implements TypeAdaptor {
 
 	@Override
 	public String toSqlStr(final Object object) {
-		if (object == null)
-			return "null";
-		return object.toString();
+		return "'" + ClobReader.read((Clob) object) + "'";
 	}
 
 	@Override
 	public Object toTypeValue(final Class<?> type, final Object object) {
-		if (object == null || object instanceof Boolean)
-			return object;
-		else if (object instanceof Number)
-			return ((Number) object).intValue() != 0;
-		return 0;
+		return ClobReader.read((Clob) object);
 	}
 
 }

@@ -1,4 +1,4 @@
-package se.ugli.habanero.j;
+package se.ugli.habanero.j.typeadaptors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -7,10 +7,11 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import se.ugli.commons.Option;
+import se.ugli.habanero.j.Habanero;
 
 import com.google.common.collect.Iterables;
 
-public class ClobTest {
+public class ClobTypeAdaptorTest {
 
 	@Test
 	public void crud() {

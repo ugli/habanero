@@ -6,6 +6,7 @@ import java.io.InputStream;
 
 import org.junit.Test;
 
+import se.ugli.habanero.j.batch.SqlScript;
 import se.ugli.habanero.j.datasource.H2DataSource;
 
 public class SqlScriptTest {

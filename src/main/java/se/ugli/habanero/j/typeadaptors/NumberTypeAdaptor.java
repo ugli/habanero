@@ -2,11 +2,11 @@ package se.ugli.habanero.j.typeadaptors;
 
 import se.ugli.habanero.j.TypeAdaptor;
 
-public class BooleanTypeAdaptor implements TypeAdaptor {
+public class NumberTypeAdaptor implements TypeAdaptor {
 
 	@Override
 	public boolean supports(final Class<?> type) {
-		return type == Boolean.class;
+		return Number.class.isAssignableFrom(type);
 	}
 
 	@Override
@@ -23,11 +23,7 @@ public class BooleanTypeAdaptor implements TypeAdaptor {
 
 	@Override
 	public Object toTypeValue(final Class<?> type, final Object object) {
-		if (object == null || object instanceof Boolean)
-			return object;
-		else if (object instanceof Number)
-			return ((Number) object).intValue() != 0;
-		return 0;
+		return object;
 	}
 
 }

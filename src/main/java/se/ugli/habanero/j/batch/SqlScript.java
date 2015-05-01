@@ -1,17 +1,17 @@
-package se.ugli.habanero.j;
+package se.ugli.habanero.j.batch;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Scanner;
 
 import javax.sql.DataSource;
 
 import se.ugli.commons.CloseCommand;
 import se.ugli.commons.Resource;
+import se.ugli.habanero.j.Habanero;
+import se.ugli.habanero.j.HabaneroException;
 
 public class SqlScript {
 
@@ -26,11 +26,11 @@ public class SqlScript {
 		return new SqlScript(dataSource, statementDelimiter);
 	}
 
-	private final DataSource dataSource;
+	private final Habanero habanero;
 	private final String statementDelimiter;
 
 	private SqlScript(final DataSource dataSource, final String statementDelimiter) {
-		this.dataSource = dataSource;
+		this.habanero = Habanero.apply(dataSource);
 		this.statementDelimiter = statementDelimiter;
 	}
 
@@ -54,10 +54,6 @@ public class SqlScript {
 		run(new Scanner(source));
 	}
 
-	public void run(final Resource resource) {
-		run(resource.getInputStream());
-	}
-
 	public void run(final InputStream source, final String charsetName) {
 		run(new Scanner(source, charsetName));
 	}
@@ -66,36 +62,34 @@ public class SqlScript {
 		run(new Scanner(source));
 	}
 
+	public void run(final Resource resource) {
+		run(resource.getInputStream());
+	}
+
 	public void run(final String source) {
 		run(new Scanner(source));
 	}
 
 	private void run(final Scanner scanner) {
-		Connection connection = null;
-		Statement statement = null;
+		final Batch batch = habanero.batch();
 		try {
-			connection = dataSource.getConnection();
-			statement = connection.createStatement();
-			makeBatch(scanner, statement);
-			statement.executeBatch();
+			StringBuilder sqlBuilder = new StringBuilder();
+			while (scanner.hasNext()) {
+				if (sqlBuilder.length() > 0)
+					sqlBuilder.append(LINE_DELIMITER);
+				sqlBuilder.append(scanner.nextLine());
+				final String sql = sqlBuilder.toString();
+				if (sql.trim().endsWith(statementDelimiter)) {
+					batch.add(sql);
+					sqlBuilder = new StringBuilder();
+				}
+			}
+			batch.execute();
 		} catch (final SQLException e) {
 			throw new HabaneroException(e);
 		} finally {
-			CloseCommand.execute(statement, connection, scanner);
-		}
-	}
-
-	private void makeBatch(final Scanner scanner, final Statement statement) throws SQLException {
-		StringBuilder sqlBuilder = new StringBuilder();
-		while (scanner.hasNext()) {
-			if (sqlBuilder.length() > 0)
-				sqlBuilder.append(LINE_DELIMITER);
-			sqlBuilder.append(scanner.nextLine());
-			final String sql = sqlBuilder.toString();
-			if (sql.trim().endsWith(statementDelimiter)) {
-				statement.addBatch(sql);
-				sqlBuilder = new StringBuilder();
-			}
+			batch.close();
+			CloseCommand.execute(scanner);
 		}
 	}
 

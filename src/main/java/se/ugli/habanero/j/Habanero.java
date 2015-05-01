@@ -15,23 +15,33 @@ import javax.sql.DataSource;
 import se.ugli.commons.CloseCommand;
 import se.ugli.commons.Option;
 import se.ugli.commons.Resource;
+import se.ugli.habanero.j.batch.Batch;
+import se.ugli.habanero.j.batch.BatchItem;
 import se.ugli.habanero.j.datasource.H2DataSource;
 import se.ugli.habanero.j.internal.PrepareArgumentsCommand;
 import se.ugli.habanero.j.internal.SingleValueIterator;
 import se.ugli.habanero.j.internal.TypedMapIdentityIterator;
+import se.ugli.habanero.j.metadata.MetaData;
+import se.ugli.habanero.j.typeadaptors.BlobTypeAdaptor;
 import se.ugli.habanero.j.typeadaptors.BooleanTypeAdaptor;
+import se.ugli.habanero.j.typeadaptors.CharSequenceTypeAdaptor;
+import se.ugli.habanero.j.typeadaptors.ClobTypeAdaptor;
+import se.ugli.habanero.j.typeadaptors.DateTypeAdaptor;
 import se.ugli.habanero.j.typeadaptors.EnumTypeAdaptor;
 import se.ugli.habanero.j.typeadaptors.IdTypeAdaptor;
-import se.ugli.habanero.j.typeadaptors.JdbcTypesAdaptor;
 import se.ugli.habanero.j.typeadaptors.JodaTimeAdaptor;
-import se.ugli.habanero.j.typeadaptors.SerializableTypeAdaptor;
+import se.ugli.habanero.j.typeadaptors.NumberTypeAdaptor;
 
 public final class Habanero {
 
 	static {
-		register(new SerializableTypeAdaptor());
-		register(new JdbcTypesAdaptor());
+		register(new NumberTypeAdaptor());
+		register(new CharSequenceTypeAdaptor());
 		register(new BooleanTypeAdaptor());
+		register(new BlobTypeAdaptor());
+		register(new ClobTypeAdaptor());
+		register(new DateTypeAdaptor());
+
 		register(new EnumTypeAdaptor());
 		register(new IdTypeAdaptor());
 		if (Resource.classExists("org.joda.time.DateTime"))
@@ -51,13 +61,38 @@ public final class Habanero {
 	}
 
 	public static void register(final TypeAdaptor typeAdaptor) {
-		TypeRegister.add(typeAdaptor);
+		TypeRegister.add(typeAdaptor, true);
+	}
+
+	public static void register(final TypeAdaptor typeAdaptor, final boolean highestPriority) {
+		TypeRegister.add(typeAdaptor, highestPriority);
+	}
+
+	public static void unregister(final TypeAdaptor typeAdaptor) {
+		TypeRegister.remove(typeAdaptor);
 	}
 
 	public final DataSource dataSource;
 
 	private Habanero(final DataSource dataSource) {
 		this.dataSource = dataSource;
+	}
+
+	public Batch batch() {
+		return new Batch(dataSource);
+	}
+
+	public int[] batch(final Iterator<BatchItem> batchIterator) {
+		final Batch batch = new Batch(dataSource);
+		try {
+			while (batchIterator.hasNext())
+				batch.add(batchIterator.next());
+			return batch.execute();
+		} catch (final SQLException e) {
+			throw new HabaneroException(e);
+		} finally {
+			batch.close();
+		}
 	}
 
 	public boolean execute(final String sql) {
@@ -86,6 +121,10 @@ public final class Habanero {
 		} finally {
 			CloseCommand.execute(statement, connection);
 		}
+	}
+
+	public MetaData metadata() {
+		return MetaData.apply(dataSource);
 	}
 
 	public <T> Iterable<T> queryMany(final Class<T> type, final String sql, final Object... args) {

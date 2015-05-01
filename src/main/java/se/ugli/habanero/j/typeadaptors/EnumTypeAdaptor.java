@@ -19,6 +19,13 @@ public class EnumTypeAdaptor implements TypeAdaptor {
 		return null;
 	}
 
+	@Override
+	public String toSqlStr(final Object object) {
+		if (object == null)
+			return "null";
+		return "'" + object + "'";
+	}
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Object toTypeValue(final Class type, final Object object) {

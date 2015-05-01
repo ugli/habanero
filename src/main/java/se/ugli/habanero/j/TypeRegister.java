@@ -12,8 +12,16 @@ final class TypeRegister {
 
 	private final static List<TypeAdaptor> typeAdaptors = Collections.synchronizedList(new ArrayList<TypeAdaptor>());
 
-	static void add(final TypeAdaptor typeAdaptor) {
-		typeAdaptors.add(0, typeAdaptor);
+	static void add(final TypeAdaptor typeAdaptor, final boolean highestPriority) {
+		if (highestPriority)
+			typeAdaptors.add(0, typeAdaptor);
+		else
+			typeAdaptors.add(typeAdaptor);
+	}
+
+	static void remove(final TypeAdaptor typeAdaptor) {
+		typeAdaptors.remove(typeAdaptor);
+		cache.clear();
 	}
 
 	static TypeAdaptor get(final Class<?> type) {

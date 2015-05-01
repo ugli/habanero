@@ -12,11 +12,17 @@ public class IdTypeAdaptor implements TypeAdaptor {
 
 	@Override
 	public Object toJdbcValue(final Object object) {
-		if (object != null) {
-			final Id id = (Id) object;
-			return id.value;
-		}
+		if (object != null)
+			return ((Id) object).value;
 		return null;
+	}
+
+	@Override
+	public String toSqlStr(final Object object) {
+		final Object jdbcValue = toJdbcValue(object);
+		if (jdbcValue == null)
+			return "null";
+		return "'" + jdbcValue + "'";
 	}
 
 	@Override

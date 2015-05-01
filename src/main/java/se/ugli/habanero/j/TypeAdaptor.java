@@ -6,6 +6,8 @@ public interface TypeAdaptor {
 
 	Object toJdbcValue(Object object);
 
+	String toSqlStr(Object object);
+
 	Object toTypeValue(Class<?> type, Object object);
 
 }

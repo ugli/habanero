@@ -5,8 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import se.ugli.habanero.j.Habanero;
-import se.ugli.habanero.j.OutParam;
 import se.ugli.habanero.j.TypeAdaptor;
+import se.ugli.habanero.j.metadata.SqlType;
 
 public class PrepareArgumentsCommand {
 
@@ -23,10 +23,10 @@ public class PrepareArgumentsCommand {
 	public void exec(final Object... args) throws SQLException {
 		int parameterIndex = 1;
 		for (final Object arg : args)
-			if (arg instanceof OutParam && statement instanceof CallableStatement) {
-				final OutParam outParam = (OutParam) arg;
+			if (arg instanceof SqlType && statement instanceof CallableStatement) {
+				final SqlType outParam = (SqlType) arg;
 				final CallableStatement callableStatement = (CallableStatement) statement;
-				callableStatement.registerOutParameter(parameterIndex, outParam.sqlType);
+				callableStatement.registerOutParameter(parameterIndex, outParam.typeNumber);
 			} else
 				statement.setObject(parameterIndex++, convertArgument(arg));
 	}

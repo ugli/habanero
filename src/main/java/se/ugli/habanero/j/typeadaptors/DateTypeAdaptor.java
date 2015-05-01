@@ -1,12 +1,14 @@
 package se.ugli.habanero.j.typeadaptors;
 
+import java.util.Date;
+
 import se.ugli.habanero.j.TypeAdaptor;
 
-public class BooleanTypeAdaptor implements TypeAdaptor {
+public class DateTypeAdaptor implements TypeAdaptor {
 
 	@Override
 	public boolean supports(final Class<?> type) {
-		return type == Boolean.class;
+		return Date.class.isAssignableFrom(type);
 	}
 
 	@Override
@@ -18,16 +20,12 @@ public class BooleanTypeAdaptor implements TypeAdaptor {
 	public String toSqlStr(final Object object) {
 		if (object == null)
 			return "null";
-		return object.toString();
+		return "'" + object.toString() + "'";
 	}
 
 	@Override
 	public Object toTypeValue(final Class<?> type, final Object object) {
-		if (object == null || object instanceof Boolean)
-			return object;
-		else if (object instanceof Number)
-			return ((Number) object).intValue() != 0;
-		return 0;
+		return object;
 	}
 
 }

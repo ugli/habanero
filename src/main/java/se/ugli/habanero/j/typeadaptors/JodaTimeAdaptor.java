@@ -15,14 +15,24 @@ public class JodaTimeAdaptor implements TypeAdaptor {
 
 	@Override
 	public Object toJdbcValue(final Object object) {
+		if (object == null)
+			return null;
 		return new Timestamp(((DateTime) object).getMillis());
 	}
 
 	@Override
+	public String toSqlStr(final Object object) {
+		final Object jdbcValue = toJdbcValue(object);
+		if (jdbcValue == null)
+			return "null";
+		return "'" + jdbcValue + "'";
+	}
+
+	@Override
 	public Object toTypeValue(final Class<?> type, final Object object) {
-		if (object != null)
-			return new DateTime(object);
-		return null;
+		if (object == null)
+			return null;
+		return new DateTime(object);
 	}
 
 }

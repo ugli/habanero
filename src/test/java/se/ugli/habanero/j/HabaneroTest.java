@@ -14,7 +14,8 @@ import org.junit.Test;
 
 import se.ugli.commons.Option;
 import se.ugli.commons.Resource;
-import se.ugli.habanero.j.dataset.DataSet;
+import se.ugli.habanero.j.batch.DataSet;
+import se.ugli.habanero.j.batch.SqlScript;
 
 import com.google.common.collect.Iterables;
 
@@ -141,7 +142,7 @@ public class HabaneroTest {
 			assertEquals("fredde", person.name);
 			assertEquals(44, person.age);
 			assertEquals(1, Iterables.size(person.adresses));
-			assertEquals("abc", person.adresses.iterator().next().street);
+			assertEquals("sveavägen", person.adresses.iterator().next().street);
 		}
 		{
 			final Person person = Iterables.get(persons, 1);
@@ -162,7 +163,7 @@ public class HabaneroTest {
 		assertEquals("fredde", person.name);
 		assertEquals(44, person.age);
 		assertEquals(1, Iterables.size(person.adresses));
-		assertEquals("abc", person.adresses.iterator().next().street);
+		assertEquals("sveavägen", person.adresses.iterator().next().street);
 	}
 
 	@Test
