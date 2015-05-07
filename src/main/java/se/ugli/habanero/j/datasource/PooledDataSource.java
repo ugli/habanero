@@ -15,11 +15,11 @@ public class PooledDataSource extends DataSourceDelegate {
 	}
 
 	public static DataSource apply() {
-		return apply(HabaneroProperties.get());
+		return apply(HabaneroProperties.getProperties());
 	}
 
 	public static DataSource apply(final Implementation implementation) {
-		return apply(HabaneroProperties.get(), implementation);
+		return apply(HabaneroProperties.getProperties(), implementation);
 	}
 
 	public static DataSource apply(final Properties properties) {

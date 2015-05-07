@@ -13,7 +13,7 @@ public class IdTypeAdaptor implements TypeAdaptor {
 	@Override
 	public Object toJdbcValue(final Object object) {
 		if (object != null)
-			return ((Id) object).value;
+			return ((Id) object).value();
 		return null;
 	}
 

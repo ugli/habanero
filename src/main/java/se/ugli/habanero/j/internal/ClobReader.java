@@ -1,6 +1,7 @@
 package se.ugli.habanero.j.internal;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.sql.Clob;
 import java.sql.SQLException;
 
@@ -14,7 +15,8 @@ public class ClobReader {
 		InputStream inputStream = null;
 		try {
 			inputStream = clob.getAsciiStream();
-			return CopyCommand.apply().copyToString(inputStream);
+			final Charset charset = HabaneroProperties.apply().getCharset();
+			return CopyCommand.apply().copyToString(inputStream, charset);
 		} catch (final SQLException e) {
 			throw new HabaneroException(e);
 		} finally {
