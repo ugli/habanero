@@ -8,12 +8,23 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-class DataSourceDelegate implements DataSource {
+public class DataSourceDelegate implements DataSource {
 
-	private final DataSource dataSource;
+	private DataSource dataSource;
 
-	DataSourceDelegate(final DataSource dataSource) {
+	public DataSourceDelegate(final DataSource dataSource) {
 		this.dataSource = dataSource;
+	}
+
+	public DataSourceDelegate() {
+	}
+
+	public void setDelegate(final DataSource dataSource) {
+		this.dataSource = dataSource;
+	}
+
+	public DataSource getDelegate() {
+		return dataSource;
 	}
 
 	@Override

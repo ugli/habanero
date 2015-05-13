@@ -22,6 +22,7 @@ import se.ugli.habanero.j.internal.PrepareArgumentsCommand;
 import se.ugli.habanero.j.internal.SingleValueIterator;
 import se.ugli.habanero.j.internal.TypedMapIdentityIterator;
 import se.ugli.habanero.j.metadata.MetaData;
+import se.ugli.habanero.j.test.HabaneroTestRunner;
 import se.ugli.habanero.j.typeadaptors.BlobTypeAdaptor;
 import se.ugli.habanero.j.typeadaptors.BooleanTypeAdaptor;
 import se.ugli.habanero.j.typeadaptors.CharSequenceTypeAdaptor;
@@ -49,6 +50,9 @@ public final class Habanero {
 	}
 
 	public static Habanero apply() {
+		final Option<DataSource> dsOpt = HabaneroTestRunner.getDataSource();
+		if (dsOpt.isDefined())
+			return new Habanero(dsOpt.get());
 		return new Habanero(new H2DataSource());
 	}
 
@@ -80,6 +84,10 @@ public final class Habanero {
 
 	public Batch batch() {
 		return new Batch(dataSource);
+	}
+
+	public int[] batch(final Iterable<BatchItem> batchItems) {
+		return batch(batchItems.iterator());
 	}
 
 	public int[] batch(final Iterator<BatchItem> batchIterator) {

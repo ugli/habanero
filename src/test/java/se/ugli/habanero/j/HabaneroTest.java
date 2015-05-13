@@ -7,28 +7,20 @@ import static org.junit.Assert.assertTrue;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import javax.sql.DataSource;
-
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import se.ugli.commons.Option;
-import se.ugli.commons.Resource;
-import se.ugli.habanero.j.batch.DataSet;
-import se.ugli.habanero.j.batch.SqlScript;
+import se.ugli.habanero.j.test.HabaneroTestConfig;
+import se.ugli.habanero.j.test.HabaneroTestRunner;
 
 import com.google.common.collect.Iterables;
 
+@RunWith(HabaneroTestRunner.class)
+@HabaneroTestConfig(schema = "/person.sql", dataSet = "/person.xml")
 public class HabaneroTest {
 
-	private final Habanero habanero = Habanero.apply();
-
-	@Before
-	public void setup() throws Exception {
-		final DataSource dataSource = habanero.dataSource;
-		SqlScript.apply(dataSource).run(Resource.apply("/person.sql"));
-		DataSet.apply(dataSource).exec(Resource.apply("/person.xml"));
-	}
+	private final static Habanero habanero = Habanero.apply();
 
 	@Test
 	public void queryManyByType() {
@@ -57,10 +49,10 @@ public class HabaneroTest {
 
 	private class Person {
 		final String name;
-		final int age;
+		final Integer age;
 		final Iterable<Address> adresses;
 
-		Person(final String name, final int age, final Iterable<Address> adresses) {
+		Person(final String name, final Integer age, final Iterable<Address> adresses) {
 			this.name = name;
 			this.age = age;
 			this.adresses = adresses;
@@ -82,9 +74,9 @@ public class HabaneroTest {
 		}, sql);
 		assertEquals(2, Iterables.size(persons));
 		assertEquals("fredde", Iterables.get(persons, 0).name);
-		assertEquals(44, Iterables.get(persons, 0).age);
+		assertEquals(new Integer(44), Iterables.get(persons, 0).age);
 		assertEquals("banan", Iterables.get(persons, 1).name);
-		assertEquals(2, Iterables.get(persons, 1).age);
+		assertEquals(new Integer(2), Iterables.get(persons, 1).age);
 	}
 
 	@Test
@@ -95,16 +87,16 @@ public class HabaneroTest {
 			@Override
 			public Person nextObject(final TypedMap input) {
 				final String name = input.get("name");
-				final int age = input.get("age");
+				final Integer age = input.get("age");
 				return new Person(name, age, null);
 			}
 
 		}, sql);
 		assertEquals(2, Iterables.size(persons));
 		assertEquals("fredde", Iterables.get(persons, 0).name);
-		assertEquals(44, Iterables.get(persons, 0).age);
+		assertEquals(new Integer(44), Iterables.get(persons, 0).age);
 		assertEquals("banan", Iterables.get(persons, 1).name);
-		assertEquals(2, Iterables.get(persons, 1).age);
+		assertEquals(new Integer(2), Iterables.get(persons, 1).age);
 	}
 
 	private class PersonGroupFunc extends GroupFunction<Person> {
@@ -116,7 +108,7 @@ public class HabaneroTest {
 		@Override
 		protected Option<Person> createObject(final GroupContext cxt, final TypedMap typedMap) {
 			final String name = typedMap.get("name");
-			final int age = typedMap.get("age");
+			final Integer age = typedMap.get("age");
 			final Iterable<Address> adresses = group(cxt, new GroupFunction<Address>("street") {
 
 				@Override
@@ -140,14 +132,14 @@ public class HabaneroTest {
 		{
 			final Person person = Iterables.get(persons, 0);
 			assertEquals("fredde", person.name);
-			assertEquals(44, person.age);
+			assertEquals(new Integer(44), person.age);
 			assertEquals(1, Iterables.size(person.adresses));
 			assertEquals("sveavägen", person.adresses.iterator().next().street);
 		}
 		{
 			final Person person = Iterables.get(persons, 1);
 			assertEquals("banan", person.name);
-			assertEquals(2, person.age);
+			assertEquals(new Integer(2), person.age);
 			assertEquals(0, Iterables.size(person.adresses));
 		}
 	}
@@ -161,7 +153,7 @@ public class HabaneroTest {
 		assertTrue(opt.isDefined());
 		final Person person = opt.get();
 		assertEquals("fredde", person.name);
-		assertEquals(44, person.age);
+		assertEquals(new Integer(44), person.age);
 		assertEquals(1, Iterables.size(person.adresses));
 		assertEquals("sveavägen", person.adresses.iterator().next().street);
 	}
