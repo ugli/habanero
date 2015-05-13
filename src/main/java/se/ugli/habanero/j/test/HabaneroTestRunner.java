@@ -9,7 +9,7 @@ import org.junit.runners.model.InitializationError;
 
 import se.ugli.commons.Option;
 import se.ugli.commons.Resource;
-import se.ugli.habanero.j.batch.DataSet;
+import se.ugli.habanero.j.batch.Dataset;
 import se.ugli.habanero.j.batch.SqlScript;
 import se.ugli.habanero.j.datasource.DataSourceDelegate;
 import se.ugli.habanero.j.datasource.H2DataSource;
@@ -36,25 +36,21 @@ public class HabaneroTestRunner extends BlockJUnit4ClassRunner {
 		final HabaneroTestConfig testConfig = getTestClass().getAnnotation(HabaneroTestConfig.class);
 		if (testConfig != null) {
 			runSchema(dataSource, testConfig.schema());
-			runDataSet(dataSource, testConfig.dataSet());
+			runDataSet(dataSource, testConfig.dataset());
 		}
 		super.runChild(method, notifier);
+		dataSourceDelegate.setDelegate(null);
 		threadLocal.set(null);
 	}
 
-	private void runDataSet(final DataSource dataSource, final String dataSet) {
-		if (dataSet != null) {
-			final Resource dataSetResource = Resource.apply(dataSet);
-			DataSet.apply(dataSource).exec(dataSetResource);
-		}
-
+	private void runDataSet(final DataSource dataSource, final String dataset) {
+		if (dataset != null && !dataset.equals(HabaneroTestConfig.NO_RESOURCE))
+			Dataset.apply(dataSource).exec(Resource.apply(dataset));
 	}
 
 	private void runSchema(final DataSource dataSource, final String schema) {
-		if (schema != null && !schema.equals(HabaneroTestConfig.NO_RESOURCE)) {
-			final Resource schemaResource = Resource.apply(schema);
-			SqlScript.apply(dataSource).run(schemaResource);
-		}
+		if (schema != null && !schema.equals(HabaneroTestConfig.NO_RESOURCE))
+			SqlScript.apply(dataSource).run(Resource.apply(schema));
 	}
 
 }

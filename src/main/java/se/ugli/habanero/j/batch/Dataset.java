@@ -27,7 +27,7 @@ import se.ugli.habanero.j.batch.BatchItem.BatchItemBuilder;
 import se.ugli.habanero.j.metadata.MetaData;
 import se.ugli.habanero.j.metadata.SqlType;
 
-public class DataSet {
+public class Dataset {
 
 	private class SaxHandler extends DefaultHandler {
 
@@ -113,13 +113,13 @@ public class DataSet {
 		}
 	}
 
-	public static DataSet apply(final DataSource dataSource) {
-		return new DataSet(dataSource);
+	public static Dataset apply(final DataSource dataSource) {
+		return new Dataset(dataSource);
 	}
 
 	private final DataSource dataSource;
 
-	private DataSet(final DataSource dataSource) {
+	private Dataset(final DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 

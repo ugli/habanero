@@ -17,7 +17,7 @@ import se.ugli.habanero.j.test.HabaneroTestRunner;
 import com.google.common.collect.Iterables;
 
 @RunWith(HabaneroTestRunner.class)
-@HabaneroTestConfig(schema = "/person.sql", dataSet = "/person.xml")
+@HabaneroTestConfig(schema = "/person.sql", dataset = "/person.xml")
 public class HabaneroTest {
 
 	private final static Habanero habanero = Habanero.apply();

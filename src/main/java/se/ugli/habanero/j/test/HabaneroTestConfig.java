@@ -13,7 +13,7 @@ public @interface HabaneroTestConfig {
 
 	static final String NO_RESOURCE = "NO_RESOURCE";
 
-	String dataSet() default NO_RESOURCE;
+	String dataset() default NO_RESOURCE;
 
 	String schema() default NO_RESOURCE;
 
