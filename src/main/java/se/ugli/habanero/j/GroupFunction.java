@@ -65,7 +65,8 @@ public abstract class GroupFunction<E> {
         final StringBuilder result = new StringBuilder();
         for (final String column : columns) {
             result.append(column);
-            result.append(tuple.get(column));
+            final Object value = tuple.get(column);
+            result.append(value);
         }
         return result.toString();
     }
