@@ -8,7 +8,7 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
-import se.ugli.commons.CloseCommand;
+import se.ugli.commons.Closeables;
 import se.ugli.habanero.j.HabaneroException;
 
 public class MetaData {
@@ -40,7 +40,7 @@ public class MetaData {
             throw new HabaneroException(e);
         }
         finally {
-            CloseCommand.execute(resultSet, connection);
+            Closeables.close(resultSet, connection);
         }
     }
 
@@ -63,7 +63,7 @@ public class MetaData {
             throw new HabaneroException(e);
         }
         finally {
-            CloseCommand.execute(connection);
+            Closeables.close(connection);
         }
     }
 

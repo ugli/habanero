@@ -13,7 +13,7 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
-import se.ugli.commons.CloseCommand;
+import se.ugli.commons.Closeables;
 import se.ugli.commons.Resource;
 import se.ugli.habanero.j.batch.Batch;
 import se.ugli.habanero.j.batch.BatchItem;
@@ -117,7 +117,7 @@ public final class Habanero {
             throw new HabaneroException(e);
         }
         finally {
-            CloseCommand.execute(statement, connection);
+            Closeables.close(statement, connection);
         }
     }
 
@@ -133,7 +133,7 @@ public final class Habanero {
             throw new HabaneroException(e);
         }
         finally {
-            CloseCommand.execute(statement, connection);
+            Closeables.close(statement, connection);
         }
     }
 
@@ -169,7 +169,7 @@ public final class Habanero {
             throw new HabaneroException(e);
         }
         finally {
-            CloseCommand.execute(resultSet, statement, connection);
+            Closeables.close(resultSet, statement, connection);
         }
     }
 
@@ -201,7 +201,7 @@ public final class Habanero {
             throw new HabaneroException(e);
         }
         finally {
-            CloseCommand.execute(resultSet, statement, connection);
+            Closeables.close(resultSet, statement, connection);
         }
     }
 
@@ -258,7 +258,7 @@ public final class Habanero {
             throw new HabaneroException(e);
         }
         finally {
-            CloseCommand.execute(statement, connection);
+            Closeables.close(statement, connection);
         }
     }
 
@@ -275,7 +275,7 @@ public final class Habanero {
             throw new HabaneroException(e);
         }
         finally {
-            CloseCommand.execute(statement, connection);
+            Closeables.close(statement, connection);
         }
     }
 

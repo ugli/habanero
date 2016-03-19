@@ -20,7 +20,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import se.ugli.commons.CloseCommand;
+import se.ugli.commons.Closeables;
 import se.ugli.commons.Resource;
 import se.ugli.habanero.j.HabaneroException;
 import se.ugli.habanero.j.batch.BatchItem.BatchItemBuilder;
@@ -134,7 +134,7 @@ public class Dataset {
             throw new HabaneroException(e);
         }
         finally {
-            CloseCommand.execute(resourceStream);
+            Closeables.close(resourceStream);
         }
     }
 
@@ -145,7 +145,7 @@ public class Dataset {
             exec(resourceStream);
         }
         finally {
-            CloseCommand.execute(resourceStream);
+            Closeables.close(resourceStream);
         }
     }
 

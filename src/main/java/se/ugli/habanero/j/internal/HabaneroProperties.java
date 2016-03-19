@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
-import se.ugli.commons.CloseCommand;
+import se.ugli.commons.Closeables;
 import se.ugli.commons.Resource;
 
 public final class HabaneroProperties {
@@ -33,7 +33,7 @@ public final class HabaneroProperties {
                 System.err.println(e.getMessage());
             }
             finally {
-                CloseCommand.execute(inputStream);
+                Closeables.close(inputStream);
             }
         return properties;
     }

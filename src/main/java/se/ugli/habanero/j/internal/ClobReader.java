@@ -5,7 +5,7 @@ import java.nio.charset.Charset;
 import java.sql.Clob;
 import java.sql.SQLException;
 
-import se.ugli.commons.CloseCommand;
+import se.ugli.commons.Closeables;
 import se.ugli.commons.CopyCommand;
 import se.ugli.habanero.j.HabaneroException;
 
@@ -22,7 +22,7 @@ public class ClobReader {
             throw new HabaneroException(e);
         }
         finally {
-            CloseCommand.execute(reader);
+            Closeables.close(reader);
         }
     }
 
