@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
-import se.ugli.commons.Closeables;
 import se.ugli.commons.Resource;
 
 public final class HabaneroProperties {
@@ -20,20 +19,12 @@ public final class HabaneroProperties {
     private static Properties readProperties(final String resourcePath) {
         final Properties properties = new Properties();
         final Resource resource = Resource.apply(resourcePath);
-        InputStream inputStream = null;
         if (resource.exists())
-            try {
-                inputStream = resource.getInputStream();
+            try (InputStream inputStream = resource.asInputStream()) {
                 properties.load(inputStream);
             }
-            catch (final IOException e) {
+            catch (final IOException | RuntimeException e) {
                 System.err.println(e.getMessage());
-            }
-            catch (final RuntimeException e) {
-                System.err.println(e.getMessage());
-            }
-            finally {
-                Closeables.close(inputStream);
             }
         return properties;
     }

@@ -13,7 +13,6 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
-import se.ugli.commons.Closeables;
 import se.ugli.commons.Resource;
 import se.ugli.habanero.j.batch.Batch;
 import se.ugli.habanero.j.batch.BatchItem;
@@ -34,6 +33,12 @@ import se.ugli.habanero.j.typeadaptors.JodaTimeAdaptor;
 import se.ugli.habanero.j.typeadaptors.NumberTypeAdaptor;
 
 public final class Habanero {
+
+    public final DataSource dataSource;
+
+    private Habanero(final DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     static {
         register(new NumberTypeAdaptor());
@@ -76,12 +81,6 @@ public final class Habanero {
         TypeRegister.remove(typeAdaptor);
     }
 
-    public final DataSource dataSource;
-
-    private Habanero(final DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
     public Batch batch() {
         return new Batch(dataSource);
     }
@@ -106,34 +105,24 @@ public final class Habanero {
     }
 
     public boolean execute(final String sql) {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        try {
-            connection = dataSource.getConnection();
-            statement = connection.prepareStatement(sql);
-            return statement.execute();
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                return statement.execute();
+            }
         }
         catch (final SQLException e) {
             throw new HabaneroException(e);
-        }
-        finally {
-            Closeables.close(statement, connection);
         }
     }
 
     public boolean executeCall(final String sql) {
-        Connection connection = null;
-        CallableStatement statement = null;
-        try {
-            connection = dataSource.getConnection();
-            statement = connection.prepareCall(sql);
-            return statement.execute();
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement statement = connection.prepareCall(sql)) {
+                return statement.execute();
+            }
         }
         catch (final SQLException e) {
             throw new HabaneroException(e);
-        }
-        finally {
-            Closeables.close(statement, connection);
         }
     }
 
@@ -142,7 +131,7 @@ public final class Habanero {
     }
 
     public <T> Iterable<T> queryMany(final Class<T> type, final String sql, final Object... args) {
-        return queryMany(new SingleValueIterator<T>(type), sql, args);
+        return queryMany(new SingleValueIterator<>(type), sql, args);
     }
 
     public <T> Iterable<T> queryMany(final GroupFunction<T> groupFunction, final String sql, final Object... args) {
@@ -151,30 +140,25 @@ public final class Habanero {
     }
 
     public <T> Iterable<T> queryMany(final ResultSetIterator<T> iterator, final String sql, final Object... args) {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-        try {
-            connection = dataSource.getConnection();
-            statement = connection.prepareStatement(sql);
-            PrepareArgumentsCommand.apply(statement).exec(args);
-            resultSet = statement.executeQuery();
-            iterator.init(resultSet);
-            final List<T> result = new ArrayList<T>();
-            while (iterator.hasNext())
-                result.add(iterator.next());
-            return Collections.unmodifiableCollection(result);
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                PrepareArgumentsCommand.apply(statement).exec(args);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    iterator.init(resultSet);
+                    final List<T> result = new ArrayList<>();
+                    while (iterator.hasNext())
+                        result.add(iterator.next());
+                    return Collections.unmodifiableCollection(result);
+                }
+            }
         }
         catch (final SQLException e) {
             throw new HabaneroException(e);
         }
-        finally {
-            Closeables.close(resultSet, statement, connection);
-        }
     }
 
     public <T> Iterable<T> queryManyCall(final Class<T> type, final String sql, final Object... args) {
-        return queryManyCall(new SingleValueIterator<T>(type), sql, args);
+        return queryManyCall(new SingleValueIterator<>(type), sql, args);
     }
 
     public <T> Iterable<T> queryManyCall(final GroupFunction<T> groupFunction, final String sql, final Object... args) {
@@ -183,30 +167,25 @@ public final class Habanero {
     }
 
     public <T> Iterable<T> queryManyCall(final ResultSetIterator<T> iterator, final String sql, final Object... args) {
-        Connection connection = null;
-        CallableStatement statement = null;
-        ResultSet resultSet = null;
-        try {
-            connection = dataSource.getConnection();
-            statement = connection.prepareCall(sql);
-            PrepareArgumentsCommand.apply(statement).exec(args);
-            resultSet = statement.executeQuery();
-            iterator.init(resultSet);
-            final List<T> result = new ArrayList<T>();
-            while (iterator.hasNext())
-                result.add(iterator.next());
-            return Collections.unmodifiableCollection(result);
+        try (Connection connection = dataSource.getConnection()) {
+            try (CallableStatement statement = connection.prepareCall(sql)) {
+                PrepareArgumentsCommand.apply(statement).exec(args);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    iterator.init(resultSet);
+                    final List<T> result = new ArrayList<>();
+                    while (iterator.hasNext())
+                        result.add(iterator.next());
+                    return Collections.unmodifiableCollection(result);
+                }
+            }
         }
         catch (final SQLException e) {
             throw new HabaneroException(e);
         }
-        finally {
-            Closeables.close(resultSet, statement, connection);
-        }
     }
 
     public <T> Optional<T> queryOne(final Class<T> type, final String sql, final Object... args) {
-        return queryOne(new SingleValueIterator<T>(type), sql, args);
+        return queryOne(new SingleValueIterator<>(type), sql, args);
     }
 
     public <T> Optional<T> queryOne(final GroupFunction<T> groupFunction, final String sql, final Object... args) {
@@ -217,7 +196,8 @@ public final class Habanero {
         return Optional.empty();
     }
 
-    public <T> Optional<T> queryOne(final ResultSetIterator<T> resultSetiterator, final String sql, final Object... args) {
+    public <T> Optional<T> queryOne(final ResultSetIterator<T> resultSetiterator, final String sql,
+            final Object... args) {
         final Iterable<T> result = queryMany(resultSetiterator, sql, args);
         final Iterator<T> objectIterator = result.iterator();
         if (objectIterator.hasNext())
@@ -226,7 +206,7 @@ public final class Habanero {
     }
 
     public <T> Optional<T> queryOneCall(final Class<T> type, final String sql, final Object... args) {
-        return queryOneCall(new SingleValueIterator<T>(type), sql, args);
+        return queryOneCall(new SingleValueIterator<>(type), sql, args);
     }
 
     public <T> Optional<T> queryOneCall(final GroupFunction<T> groupFunction, final String sql, final Object... args) {
@@ -237,7 +217,8 @@ public final class Habanero {
         return Optional.empty();
     }
 
-    public <T> Optional<T> queryOneCall(final ResultSetIterator<T> resultSetiterator, final String sql, final Object... args) {
+    public <T> Optional<T> queryOneCall(final ResultSetIterator<T> resultSetiterator, final String sql,
+            final Object... args) {
         final Iterable<T> result = queryManyCall(resultSetiterator, sql, args);
         final Iterator<T> objectIterator = result.iterator();
         if (objectIterator.hasNext())
@@ -246,36 +227,26 @@ public final class Habanero {
     }
 
     public int update(final String sql, final Object... args) {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        try {
-            connection = dataSource.getConnection();
-            statement = connection.prepareStatement(sql);
-            PrepareArgumentsCommand.apply(statement).exec(args);
-            return statement.executeUpdate();
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                PrepareArgumentsCommand.apply(statement).exec(args);
+                return statement.executeUpdate();
+            }
         }
         catch (final SQLException e) {
             throw new HabaneroException(e);
-        }
-        finally {
-            Closeables.close(statement, connection);
         }
     }
 
     public int updateCall(final String sql, final Object... args) {
-        Connection connection = null;
-        CallableStatement statement = null;
-        try {
-            connection = dataSource.getConnection();
-            statement = connection.prepareCall(sql);
-            PrepareArgumentsCommand.apply(statement).exec(args);
-            return statement.executeUpdate();
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement statement = connection.prepareCall(sql)) {
+                PrepareArgumentsCommand.apply(statement).exec(args);
+                return statement.executeUpdate();
+            }
         }
         catch (final SQLException e) {
             throw new HabaneroException(e);
-        }
-        finally {
-            Closeables.close(statement, connection);
         }
     }
 

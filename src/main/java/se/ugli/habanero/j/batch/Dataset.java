@@ -2,7 +2,6 @@ package se.ugli.habanero.j.batch;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -20,7 +19,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import se.ugli.commons.Closeables;
 import se.ugli.commons.Resource;
 import se.ugli.habanero.j.HabaneroException;
 import se.ugli.habanero.j.batch.BatchItem.BatchItemBuilder;
@@ -33,7 +31,7 @@ public class Dataset {
 
         private final Batch batch;
         private boolean started = false;
-        private final Map<String, Map<String, SqlType>> tableCache = new HashMap<String, Map<String, SqlType>>();
+        private final Map<String, Map<String, SqlType>> tableCache = new HashMap<>();
         private final DataSource dataSource;
 
         public SaxHandler(final DataSource dataSource) {
@@ -52,7 +50,8 @@ public class Dataset {
         }
 
         @Override
-        public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) {
+        public void startElement(final String uri, final String localName, final String qName,
+                final Attributes attributes) {
             if (!started)
                 started = true;
             else
@@ -89,8 +88,8 @@ public class Dataset {
             final SqlType outParam = getType(tableName, columnName);
             if (outParam == SqlType.NUMERIC || outParam == SqlType.DECIMAL)
                 return new BigInteger(value);
-            else if (outParam == SqlType.BIT || outParam == SqlType.TINYINT || outParam == SqlType.SMALLINT || outParam == SqlType.INTEGER
-                    || outParam == SqlType.BIGINT)
+            else if (outParam == SqlType.BIT || outParam == SqlType.TINYINT || outParam == SqlType.SMALLINT
+                    || outParam == SqlType.INTEGER || outParam == SqlType.BIGINT)
                 return Long.parseLong(value);
             else if (outParam == SqlType.REAL || outParam == SqlType.FLOAT || outParam == SqlType.DOUBLE)
                 return Double.parseDouble(value);
@@ -125,27 +124,20 @@ public class Dataset {
     }
 
     public void exec(final File file) {
-        InputStream resourceStream = null;
-        try {
-            resourceStream = new FileInputStream(file);
+        try (InputStream resourceStream = new FileInputStream(file)) {
             exec(resourceStream);
         }
-        catch (final FileNotFoundException e) {
+        catch (final IOException e) {
             throw new HabaneroException(e);
-        }
-        finally {
-            Closeables.close(resourceStream);
         }
     }
 
     public void exec(final Resource resource) {
-        InputStream resourceStream = null;
-        try {
-            resourceStream = resource.getInputStream();
+        try (InputStream resourceStream = resource.asInputStream()) {
             exec(resourceStream);
         }
-        finally {
-            Closeables.close(resourceStream);
+        catch (final IOException e) {
+            throw new HabaneroException(e);
         }
     }
 
@@ -154,10 +146,7 @@ public class Dataset {
         try {
             createSaxParser().parse(inputStream, saxHandler);
         }
-        catch (final SAXException e) {
-            throw new HabaneroException(e);
-        }
-        catch (final IOException e) {
+        catch (SAXException | IOException e) {
             throw new HabaneroException(e);
         }
         finally {
@@ -165,16 +154,13 @@ public class Dataset {
         }
     }
 
-    private SAXParser createSaxParser() {
+    private static SAXParser createSaxParser() {
         try {
             final SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
             return factory.newSAXParser();
         }
-        catch (final ParserConfigurationException e) {
-            throw new HabaneroException(e);
-        }
-        catch (final SAXException e) {
+        catch (ParserConfigurationException | SAXException e) {
             throw new HabaneroException(e);
         }
     }

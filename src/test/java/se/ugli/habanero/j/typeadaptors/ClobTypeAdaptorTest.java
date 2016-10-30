@@ -4,10 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.Optional;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.google.common.collect.Iterables;
@@ -39,8 +37,8 @@ public class ClobTypeAdaptorTest {
     }
 
     @Test
-    public void largeXmlFile() throws IOException {
-        final byte[] bytes1 = IOUtils.toByteArray(Resource.apply("/pubmed-example.xml").getInputStream());
+    public void largeXmlFile() {
+        final byte[] bytes1 = Resource.apply("/pubmed-example.xml").asBytes();
         final Habanero habanero = Habanero.apply();
         habanero.execute("create table abc(x int, y clob)");
         assertEquals(1, habanero.update("insert into abc(x,y) values(?,?)", 1, new String(bytes1)));

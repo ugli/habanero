@@ -8,7 +8,6 @@ import java.util.Scanner;
 
 import javax.sql.DataSource;
 
-import se.ugli.commons.Closeables;
 import se.ugli.commons.Resource;
 import se.ugli.habanero.j.Habanero;
 import se.ugli.habanero.j.HabaneroException;
@@ -30,13 +29,13 @@ public class SqlScript {
     private final String statementDelimiter;
 
     private SqlScript(final DataSource dataSource, final String statementDelimiter) {
-        this.habanero = Habanero.apply(dataSource);
+        habanero = Habanero.apply(dataSource);
         this.statementDelimiter = statementDelimiter;
     }
 
     public void run(final File source) {
-        try {
-            run(new Scanner(source));
+        try (Scanner scanner = new Scanner(source)) {
+            run(scanner);
         }
         catch (final FileNotFoundException e) {
             throw new HabaneroException(e);
@@ -44,8 +43,8 @@ public class SqlScript {
     }
 
     public void run(final File source, final String charsetName) {
-        try {
-            run(new Scanner(source, charsetName));
+        try (Scanner scanner = new Scanner(source, charsetName)) {
+            run(scanner);
         }
         catch (final FileNotFoundException e) {
             throw new HabaneroException(e);
@@ -53,23 +52,31 @@ public class SqlScript {
     }
 
     public void run(final InputStream source) {
-        run(new Scanner(source));
+        try (Scanner scanner = new Scanner(source)) {
+            run(scanner);
+        }
     }
 
     public void run(final InputStream source, final String charsetName) {
-        run(new Scanner(source, charsetName));
+        try (Scanner scanner = new Scanner(source, charsetName)) {
+            run(scanner);
+        }
     }
 
     public void run(final Readable source) {
-        run(new Scanner(source));
+        try (Scanner scanner = new Scanner(source)) {
+            run(scanner);
+        }
     }
 
     public void run(final Resource resource) {
-        run(resource.getInputStream());
+        run(resource.asInputStream());
     }
 
     public void run(final String source) {
-        run(new Scanner(source));
+        try (Scanner scanner = new Scanner(source)) {
+            run(scanner);
+        }
     }
 
     private void run(final Scanner scanner) {
@@ -93,7 +100,6 @@ public class SqlScript {
         }
         finally {
             batch.close();
-            Closeables.close(scanner);
         }
     }
 

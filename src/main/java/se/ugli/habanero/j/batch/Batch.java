@@ -6,12 +6,15 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import se.ugli.commons.Closeables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import se.ugli.habanero.j.Habanero;
 import se.ugli.habanero.j.TypeAdaptor;
 
-public class Batch {
+public class Batch implements AutoCloseable {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private Connection connection = null;
     private final DataSource dataSource;
     private Statement statement = null;
@@ -38,8 +41,22 @@ public class Batch {
         getStatement().addBatch(newSql);
     }
 
+    @Override
     public void close() {
-        Closeables.close(statement, connection);
+        if (statement != null)
+            try {
+                statement.close();
+            }
+            catch (final SQLException e) {
+                logger.warn(e.getMessage(), e);
+            }
+        if (connection != null)
+            try {
+                connection.close();
+            }
+            catch (final SQLException e) {
+                logger.warn(e.getMessage(), e);
+            }
     }
 
     public int[] execute() throws SQLException {
@@ -54,7 +71,7 @@ public class Batch {
         return statement;
     }
 
-    private String insertFirstJdbcValue(final String sql, final String value) {
+    private static String insertFirstJdbcValue(final String sql, final String value) {
         return sql.replaceFirst("\\?", value);
     }
 

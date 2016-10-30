@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
-import se.ugli.commons.Closeables;
 import se.ugli.habanero.j.HabaneroException;
 
 public class MetaData {
@@ -24,30 +23,24 @@ public class MetaData {
     }
 
     public Optional<SqlType> getColumnType(final String tableName, final String columnName) {
-        Connection connection = null;
-        ResultSet resultSet = null;
-        try {
-            connection = dataSource.getConnection();
+        try (Connection connection = dataSource.getConnection()) {
             final DatabaseMetaData metaData = connection.getMetaData();
-            resultSet = metaData.getColumns(null, null, tableName.toUpperCase(), columnName.toUpperCase());
-            while (resultSet.next()) {
-                final int typeNumber = resultSet.getInt("DATA_TYPE");
-                return Optional.ofNullable(SqlType.applyTypeNumber(typeNumber));
+            try (ResultSet resultSet = metaData.getColumns(null, null, tableName.toUpperCase(),
+                    columnName.toUpperCase())) {
+                while (resultSet.next()) {
+                    final int typeNumber = resultSet.getInt("DATA_TYPE");
+                    return Optional.ofNullable(SqlType.applyTypeNumber(typeNumber));
+                }
+                return Optional.empty();
             }
-            return Optional.empty();
         }
         catch (final SQLException e) {
             throw new HabaneroException(e);
         }
-        finally {
-            Closeables.close(resultSet, connection);
-        }
     }
 
     public DatabaseProductName getDatabaseProductName() {
-        Connection connection = null;
-        try {
-            connection = dataSource.getConnection();
+        try (Connection connection = dataSource.getConnection()) {
             final DatabaseMetaData databaseMetaData = connection.getMetaData();
             final String productName = databaseMetaData.getDatabaseProductName();
             if (productName.equalsIgnoreCase("PostgreSQL"))
@@ -61,9 +54,6 @@ public class MetaData {
         }
         catch (final SQLException e) {
             throw new HabaneroException(e);
-        }
-        finally {
-            Closeables.close(connection);
         }
     }
 
