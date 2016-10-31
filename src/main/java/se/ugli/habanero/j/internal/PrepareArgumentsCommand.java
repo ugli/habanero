@@ -10,33 +10,34 @@ import se.ugli.habanero.j.metadata.SqlType;
 
 public class PrepareArgumentsCommand {
 
-	public static PrepareArgumentsCommand apply(final PreparedStatement statement) {
-		return new PrepareArgumentsCommand(statement);
-	}
+    private final PreparedStatement statement;
 
-	private final PreparedStatement statement;
+    private PrepareArgumentsCommand(final PreparedStatement statement) {
+        this.statement = statement;
+    }
 
-	private PrepareArgumentsCommand(final PreparedStatement statement) {
-		this.statement = statement;
-	}
+    public static PrepareArgumentsCommand apply(final PreparedStatement statement) {
+        return new PrepareArgumentsCommand(statement);
+    }
 
-	public void exec(final Object... args) throws SQLException {
-		int parameterIndex = 1;
-		for (final Object arg : args)
-			if (arg instanceof SqlType && statement instanceof CallableStatement) {
-				final SqlType outParam = (SqlType) arg;
-				final CallableStatement callableStatement = (CallableStatement) statement;
-				callableStatement.registerOutParameter(parameterIndex, outParam.typeNumber);
-			} else
-				statement.setObject(parameterIndex++, convertArgument(arg));
-	}
+    public void exec(final Object... args) throws SQLException {
+        int parameterIndex = 1;
+        for (final Object arg : args)
+            if (arg instanceof SqlType && statement instanceof CallableStatement) {
+                final SqlType outParam = (SqlType) arg;
+                final CallableStatement callableStatement = (CallableStatement) statement;
+                callableStatement.registerOutParameter(parameterIndex, outParam.typeNumber);
+            }
+            else
+                statement.setObject(parameterIndex++, convertArgument(arg));
+    }
 
-	private Object convertArgument(final Object object) {
-		if (object != null) {
-			final Class<?> type = object.getClass();
-			final TypeAdaptor typeAdaptor = Habanero.getTypeAdaptor(type);
-			return typeAdaptor.toJdbcValue(object);
-		}
-		return null;
-	}
+    private static Object convertArgument(final Object object) {
+        if (object != null) {
+            final Class<?> type = object.getClass();
+            final TypeAdaptor typeAdaptor = Habanero.getTypeAdaptor(type);
+            return typeAdaptor.toJdbcValue(object);
+        }
+        return null;
+    }
 }

@@ -6,10 +6,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
@@ -66,19 +66,19 @@ public final class Habanero {
     }
 
     public static TypeAdaptor getTypeAdaptor(final Class<?> type) {
-        return TypeRegister.get(type);
+        return TypeRegistry.get(type);
     }
 
     public static void register(final TypeAdaptor typeAdaptor) {
-        TypeRegister.add(typeAdaptor, true);
+        TypeRegistry.add(typeAdaptor, true);
     }
 
     public static void register(final TypeAdaptor typeAdaptor, final boolean highestPriority) {
-        TypeRegister.add(typeAdaptor, highestPriority);
+        TypeRegistry.add(typeAdaptor, highestPriority);
     }
 
     public static void unregister(final TypeAdaptor typeAdaptor) {
-        TypeRegister.remove(typeAdaptor);
+        TypeRegistry.remove(typeAdaptor);
     }
 
     public Batch batch() {
@@ -130,16 +130,15 @@ public final class Habanero {
         return MetaData.apply(dataSource);
     }
 
-    public <T> Iterable<T> queryMany(final Class<T> type, final String sql, final Object... args) {
+    public <T> Stream<T> queryMany(final Class<T> type, final String sql, final Object... args) {
         return queryMany(new SingleValueIterator<>(type), sql, args);
     }
 
-    public <T> Iterable<T> queryMany(final GroupFunction<T> groupFunction, final String sql, final Object... args) {
-        final Iterable<TypedMap> tuples = queryMany(new TypedMapIdentityIterator(), sql, args);
-        return groupFunction.createObjects(tuples);
+    public <T> Stream<T> queryMany(final Group<T> groupFunction, final String sql, final Object... args) {
+        return groupFunction.createObjects(queryMany(new TypedMapIdentityIterator(), sql, args));
     }
 
-    public <T> Iterable<T> queryMany(final ResultSetIterator<T> iterator, final String sql, final Object... args) {
+    public <T> Stream<T> queryMany(final ResultSetIterator<T> iterator, final String sql, final Object... args) {
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 PrepareArgumentsCommand.apply(statement).exec(args);
@@ -148,7 +147,7 @@ public final class Habanero {
                     final List<T> result = new ArrayList<>();
                     while (iterator.hasNext())
                         result.add(iterator.next());
-                    return Collections.unmodifiableCollection(result);
+                    return result.stream().filter(o -> o != null);
                 }
             }
         }
@@ -157,16 +156,15 @@ public final class Habanero {
         }
     }
 
-    public <T> Iterable<T> queryManyCall(final Class<T> type, final String sql, final Object... args) {
+    public <T> Stream<T> queryManyCall(final Class<T> type, final String sql, final Object... args) {
         return queryManyCall(new SingleValueIterator<>(type), sql, args);
     }
 
-    public <T> Iterable<T> queryManyCall(final GroupFunction<T> groupFunction, final String sql, final Object... args) {
-        final Iterable<TypedMap> tuples = queryManyCall(new TypedMapIdentityIterator(), sql, args);
-        return groupFunction.createObjects(tuples);
+    public <T> Stream<T> queryManyCall(final Group<T> groupFunction, final String sql, final Object... args) {
+        return groupFunction.createObjects(queryManyCall(new TypedMapIdentityIterator(), sql, args));
     }
 
-    public <T> Iterable<T> queryManyCall(final ResultSetIterator<T> iterator, final String sql, final Object... args) {
+    public <T> Stream<T> queryManyCall(final ResultSetIterator<T> iterator, final String sql, final Object... args) {
         try (Connection connection = dataSource.getConnection()) {
             try (CallableStatement statement = connection.prepareCall(sql)) {
                 PrepareArgumentsCommand.apply(statement).exec(args);
@@ -175,7 +173,7 @@ public final class Habanero {
                     final List<T> result = new ArrayList<>();
                     while (iterator.hasNext())
                         result.add(iterator.next());
-                    return Collections.unmodifiableCollection(result);
+                    return result.stream();
                 }
             }
         }
@@ -188,42 +186,26 @@ public final class Habanero {
         return queryOne(new SingleValueIterator<>(type), sql, args);
     }
 
-    public <T> Optional<T> queryOne(final GroupFunction<T> groupFunction, final String sql, final Object... args) {
-        final Iterable<T> result = queryMany(groupFunction, sql, args);
-        final Iterator<T> objectIterator = result.iterator();
-        if (objectIterator.hasNext())
-            return Optional.ofNullable(objectIterator.next());
-        return Optional.empty();
+    public <T> Optional<T> queryOne(final Group<T> groupFunction, final String sql, final Object... args) {
+        return queryMany(groupFunction, sql, args).findFirst();
     }
 
     public <T> Optional<T> queryOne(final ResultSetIterator<T> resultSetiterator, final String sql,
             final Object... args) {
-        final Iterable<T> result = queryMany(resultSetiterator, sql, args);
-        final Iterator<T> objectIterator = result.iterator();
-        if (objectIterator.hasNext())
-            return Optional.ofNullable(objectIterator.next());
-        return Optional.empty();
+        return queryMany(resultSetiterator, sql, args).peek(System.out::println).findFirst();
     }
 
     public <T> Optional<T> queryOneCall(final Class<T> type, final String sql, final Object... args) {
         return queryOneCall(new SingleValueIterator<>(type), sql, args);
     }
 
-    public <T> Optional<T> queryOneCall(final GroupFunction<T> groupFunction, final String sql, final Object... args) {
-        final Iterable<T> result = queryManyCall(groupFunction, sql, args);
-        final Iterator<T> objectIterator = result.iterator();
-        if (objectIterator.hasNext())
-            return Optional.ofNullable(objectIterator.next());
-        return Optional.empty();
+    public <T> Optional<T> queryOneCall(final Group<T> groupFunction, final String sql, final Object... args) {
+        return queryManyCall(groupFunction, sql, args).findFirst();
     }
 
     public <T> Optional<T> queryOneCall(final ResultSetIterator<T> resultSetiterator, final String sql,
             final Object... args) {
-        final Iterable<T> result = queryManyCall(resultSetiterator, sql, args);
-        final Iterator<T> objectIterator = result.iterator();
-        if (objectIterator.hasNext())
-            return Optional.ofNullable(objectIterator.next());
-        return Optional.empty();
+        return queryManyCall(resultSetiterator, sql, args).findFirst();
     }
 
     public int update(final String sql, final Object... args) {

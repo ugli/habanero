@@ -1,12 +1,16 @@
 package se.ugli.habanero.j;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,10 +29,10 @@ public class HabaneroTest {
     @Test
     public void queryManyByType() {
         final String sql = "select name from person";
-        final Iterable<String> names = habanero.queryMany(String.class, sql);
-        assertEquals(2, Iterables.size(names));
-        assertEquals("fredde", Iterables.get(names, 0));
-        assertEquals("banan", Iterables.get(names, 1));
+        final List<String> names = habanero.queryMany(String.class, sql).collect(toList());
+        assertEquals(2, names.size());
+        assertEquals("fredde", names.get(0));
+        assertEquals("banan", names.get(1));
     }
 
     @Test(expected = HabaneroException.class)
@@ -50,12 +54,12 @@ public class HabaneroTest {
     private class Person {
         final String name;
         final Integer age;
-        final Iterable<Address> adresses;
+        final List<Address> adresses;
 
-        Person(final String name, final Integer age, final Iterable<Address> adresses) {
+        Person(final String name, final Integer age, final Stream<Address> adresses) {
             this.name = name;
             this.age = age;
-            this.adresses = adresses;
+            this.adresses = adresses != null ? adresses.collect(toList()) : Collections.emptyList();
         }
 
     }
@@ -63,7 +67,7 @@ public class HabaneroTest {
     @Test
     public void queryManyResultSetTransform() {
         final String sql = "select name,age from person";
-        final Iterable<Person> persons = habanero.queryMany(new ResultSetIterator<Person>() {
+        final List<Person> persons = habanero.queryMany(new ResultSetIterator<Person>() {
 
             @Override
             public Person nextObject(final ResultSet input) throws SQLException {
@@ -71,7 +75,7 @@ public class HabaneroTest {
                 final int age = input.getInt("age");
                 return new Person(name, age, null);
             }
-        }, sql);
+        }, sql).collect(toList());
         assertEquals(2, Iterables.size(persons));
         assertEquals("fredde", Iterables.get(persons, 0).name);
         assertEquals(new Integer(44), Iterables.get(persons, 0).age);
@@ -82,7 +86,7 @@ public class HabaneroTest {
     @Test
     public void queryManyResultMapTransform() {
         final String sql = "select name,age from person";
-        final Iterable<Person> persons = habanero.queryMany(new TypedMapIterator<Person>() {
+        final List<Person> persons = habanero.queryMany(new TypedMapIterator<Person>() {
 
             @Override
             public Person nextObject(final TypedMap input) {
@@ -91,7 +95,7 @@ public class HabaneroTest {
                 return new Person(name, age, null);
             }
 
-        }, sql);
+        }, sql).collect(toList());
         assertEquals(2, Iterables.size(persons));
         assertEquals("fredde", Iterables.get(persons, 0).name);
         assertEquals(new Integer(44), Iterables.get(persons, 0).age);
@@ -99,35 +103,16 @@ public class HabaneroTest {
         assertEquals(new Integer(2), Iterables.get(persons, 1).age);
     }
 
-    private class PersonGroupFunc extends GroupFunction<Person> {
-
-        public PersonGroupFunc() {
-            super("name", "age");
-        }
-
-        @Override
-        protected Optional<Person> createObject(final GroupContext cxt, final TypedMap typedMap) {
-            final String name = typedMap.get("name");
-            final Integer age = typedMap.get("age");
-            final Iterable<Address> adresses = group(cxt, new GroupFunction<Address>("street") {
-
-                @Override
-                protected Optional<Address> createObject(final GroupContext cxt, final TypedMap typedMap) {
-                    final String street = typedMap.get("street");
-                    if (street != null)
-                        return Optional.of(new Address(street));
-                    return Optional.empty();
-                }
-            });
-            return Optional.of(new Person(name, age, adresses));
-        }
-    }
+    Group<Person> personGrouping = Group.by(Person.class, "name", "age")
+            .with((cxt, typedMap) -> Optional
+                    .of(new Person(typedMap.get("name"), typedMap.get("age"), cxt.groupBy(Address.class, "street")
+                            .with(() -> typedMap.getOptional(String.class, "street").map(Address::new)))));
 
     @Test
     public void queryManyGroup() {
         String sql = "select name,age,street from person ";
         sql += "left join address on name=person";
-        final Iterable<Person> persons = habanero.queryMany(new PersonGroupFunc(), sql);
+        final List<Person> persons = habanero.queryMany(personGrouping, sql).collect(toList());
         assertEquals(2, Iterables.size(persons));
         {
             final Person person = Iterables.get(persons, 0);
@@ -149,7 +134,7 @@ public class HabaneroTest {
         String sql = "select name,age,street from person ";
         sql += "left join address on name=person ";
         sql += "where name=?";
-        final Optional<Person> opt = habanero.queryOne(new PersonGroupFunc(), sql, "fredde");
+        final Optional<Person> opt = habanero.queryOne(personGrouping, sql, "fredde");
         assertTrue(opt.isPresent());
         final Person person = opt.get();
         assertEquals("fredde", person.name);
@@ -161,16 +146,18 @@ public class HabaneroTest {
     @Test
     public void queryOneGroupNotFound() {
         final String sql = "select name,age from person where name=?";
-        assertFalse(habanero.queryOne(new PersonGroupFunc(), sql, "laban").isPresent());
+        assertFalse(habanero.queryOne(personGrouping, sql, "laban").isPresent());
     }
 
     @Test
     public void shouldHandleCRUD() {
         assertFalse(habanero.queryOne(Integer.class, "select age from person where name=?", "ubbe").isPresent());
         assertEquals(1, habanero.update("insert into person(name,age) values(?,?)", "ubbe", 10));
-        assertEquals(new Integer(10), habanero.queryOne(Integer.class, "select age from person where name=?", "ubbe").get());
+        assertEquals(new Integer(10),
+                habanero.queryOne(Integer.class, "select age from person where name=?", "ubbe").get());
         assertEquals(1, habanero.update("update person set age=? where name=?", 43, "ubbe"));
-        assertEquals(new Integer(43), habanero.queryOne(Integer.class, "select age from person where name=?", "ubbe").get());
+        assertEquals(new Integer(43),
+                habanero.queryOne(Integer.class, "select age from person where name=?", "ubbe").get());
         assertEquals(1, habanero.update("delete from person where name=?", "ubbe"));
         assertFalse(habanero.queryOne(Integer.class, "select age from person where name=?", "ubbe").isPresent());
     }

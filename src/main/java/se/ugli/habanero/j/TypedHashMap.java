@@ -6,7 +6,7 @@ import java.util.Optional;
 
 class TypedHashMap implements TypedMap {
 
-    private final Map<String, Object> map = new HashMap<String, Object>();
+    private final Map<String, Object> map = new HashMap<>();
 
     @Override
     public boolean equals(final Object obj) {
@@ -31,12 +31,12 @@ class TypedHashMap implements TypedMap {
     }
 
     @Override
-    public <T> Optional<T> getOption(final Class<T> type, final String key) {
+    public <T> Optional<T> getOptional(final Class<T> type, final String key) {
         return Optional.ofNullable(get(type, key));
     }
 
     @Override
-    public <T> Optional<T> getOption(final String key) {
+    public <T> Optional<T> getOptional(final String key) {
         return Optional.ofNullable(this.<T> get(key));
     }
 

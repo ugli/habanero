@@ -8,8 +8,6 @@ import java.util.Optional;
 
 import org.junit.Test;
 
-import com.google.common.collect.Iterables;
-
 import se.ugli.habanero.j.Habanero;
 
 public class BooleanTypeAdaptorTest {
@@ -21,7 +19,7 @@ public class BooleanTypeAdaptorTest {
         assertFalse(habanero.queryOne(Boolean.class, "select x from abc where x=?", true).isPresent());
         assertEquals(1, habanero.update("insert into abc(x) values(?)", true));
         assertEquals(1, habanero.update("insert into abc(x) values(?)", false));
-        assertEquals(2, Iterables.size(habanero.queryMany(Boolean.class, "select x from abc")));
+        assertEquals(2l, habanero.queryMany(Boolean.class, "select x from abc").count());
         final Optional<Boolean> boolOpt = habanero.queryOne(Boolean.class, "select x from abc where x=?", true);
         assertTrue(boolOpt.isPresent());
         assertEquals(boolOpt.get(), true);
@@ -34,7 +32,7 @@ public class BooleanTypeAdaptorTest {
         assertFalse(habanero.queryOne(Boolean.class, "select x from abc where x=?", true).isPresent());
         assertEquals(1, habanero.update("insert into abc(x) values(?)", true));
         assertEquals(1, habanero.update("insert into abc(x) values(?)", false));
-        assertEquals(2, Iterables.size(habanero.queryMany(Boolean.class, "select x from abc")));
+        assertEquals(2l, habanero.queryMany(Boolean.class, "select x from abc").count());
         final Optional<Boolean> boolOpt = habanero.queryOne(Boolean.class, "select x from abc where x=?", true);
         assertTrue(boolOpt.isPresent());
         assertEquals(boolOpt.get(), true);
@@ -47,7 +45,7 @@ public class BooleanTypeAdaptorTest {
         assertFalse(habanero.queryOne(Boolean.class, "select x from abc where x=?", true).isPresent());
         assertEquals(1, habanero.update("insert into abc(x) values(?)", true));
         assertEquals(1, habanero.update("insert into abc(x) values(?)", false));
-        assertEquals(2, Iterables.size(habanero.queryMany(Boolean.class, "select x from abc")));
+        assertEquals(2l, habanero.queryMany(Boolean.class, "select x from abc").count());
         final Optional<Boolean> boolOpt = habanero.queryOne(Boolean.class, "select x from abc where x=?", true);
         assertTrue(boolOpt.isPresent());
         assertEquals(boolOpt.get(), true);

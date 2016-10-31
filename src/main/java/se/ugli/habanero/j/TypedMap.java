@@ -8,9 +8,9 @@ public interface TypedMap {
 
     <T> T get(String key);
 
-    <T> Optional<T> getOption(Class<T> type, String key);
+    <T> Optional<T> getOptional(Class<T> type, String key);
 
-    <T> Optional<T> getOption(String key);
+    <T> Optional<T> getOptional(String key);
 
     Iterable<String> keys();
 

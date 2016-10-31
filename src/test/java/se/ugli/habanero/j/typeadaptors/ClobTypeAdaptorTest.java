@@ -8,8 +8,6 @@ import java.util.Optional;
 
 import org.junit.Test;
 
-import com.google.common.collect.Iterables;
-
 import se.ugli.commons.Resource;
 import se.ugli.habanero.j.Habanero;
 
@@ -22,7 +20,7 @@ public class ClobTypeAdaptorTest {
         assertFalse(habanero.queryOne(Boolean.class, "select y from abc where x=?", 1).isPresent());
         assertEquals(1, habanero.update("insert into abc(x,y) values(?,?)", 1, "hej"));
         assertEquals(1, habanero.update("insert into abc(x,y) values(?,?)", 2, "hej svejs"));
-        assertEquals(2, Iterables.size(habanero.queryMany(Integer.class, "select x from abc")));
+        assertEquals(2l, habanero.queryMany(Integer.class, "select x from abc").count());
         {
             final Optional<String> opt = habanero.queryOne(String.class, "select y from abc where x=?", 1);
             assertTrue(opt.isPresent());

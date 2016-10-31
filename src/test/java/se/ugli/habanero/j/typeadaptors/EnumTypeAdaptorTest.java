@@ -5,8 +5,6 @@ import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
-import com.google.common.collect.Iterables;
-
 import se.ugli.habanero.j.Habanero;
 
 public class EnumTypeAdaptorTest {
@@ -24,14 +22,14 @@ public class EnumTypeAdaptorTest {
         assertEquals(1, habanero.update("insert into abc(x) values(?)", Abc.A));
         assertEquals(1, habanero.update("insert into abc(x) values(?)", Abc.B));
         assertEquals(1, habanero.update("insert into abc(x) values(?)", Abc.C));
-        assertEquals(3, Iterables.size(habanero.queryMany(Abc.class, "select x from abc")));
+        assertEquals(3l, habanero.queryMany(Abc.class, "select x from abc").count());
         assertEquals(Abc.B, habanero.queryOne(Abc.class, "select x from abc where x=?", Abc.B).get());
         assertEquals(1, habanero.update("update abc set x=? where x=?", Abc.Z, Abc.B));
-        assertEquals(3, Iterables.size(habanero.queryMany(Abc.class, "select x from abc")));
+        assertEquals(3l, habanero.queryMany(Abc.class, "select x from abc").count());
         assertFalse(habanero.queryOne(Abc.class, "select x from abc where x=?", Abc.B).isPresent());
         assertEquals(Abc.Z, habanero.queryOne(Abc.class, "select x from abc where x=?", Abc.Z).get());
         assertEquals(1, habanero.update("delete from abc where x=?", Abc.Z));
-        assertEquals(2, Iterables.size(habanero.queryMany(Abc.class, "select x from abc")));
+        assertEquals(2l, habanero.queryMany(Abc.class, "select x from abc").count());
     }
 
 }
