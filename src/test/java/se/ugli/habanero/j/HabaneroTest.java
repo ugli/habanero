@@ -42,7 +42,7 @@ public class HabaneroTest {
         }
     }
 
-    private class Address {
+    static class Address {
 
         final String street;
 
@@ -57,7 +57,7 @@ public class HabaneroTest {
 
     }
 
-    private class Person {
+    static class Person {
         final Optional<String> name;
         final Optional<Integer> age;
         final ImmutableList<Address> adresses;

@@ -159,10 +159,11 @@ public final class Habanero {
     /**
      * Remember to close stream before leaving it to GC.
      *
-     * @param type
-     * @param sql
-     * @param args
-     * @return
+     * @param <T> result type
+     * @param type result type as Class
+     * @param sql the SQL
+     * @param args sql arguments
+     * @return a stream of T
      */
     public <T> Stream<T> queryMany(final Class<T> type, final String sql, final Object... args) {
         return queryMany(sql, args).map(new SingleValueFunc<>(type));
@@ -175,11 +176,11 @@ public final class Habanero {
     }
 
     /**
-     * Remember to close stream before leaving it to GC.
+     * Remember to close stream before leaving it to GC. Do not call next() on the ResultSet.
      *
-     * @param sql
-     * @param args
-     * @return
+     * @param sql the SQL
+     * @param args sql arguments
+     * @return a stream of resultSet
      */
     public Stream<ResultSet> queryMany(final String sql, final Object... args) {
         return queryMany(c -> c.prepareStatement(sql), args);
@@ -193,7 +194,6 @@ public final class Habanero {
             if (value != null)
                 try {
                     value.close();
-                    logger.info("closed: {}", value);
                 }
                 catch (final Exception e) {
                     logger.warn(e.getMessage(), e);
@@ -234,10 +234,11 @@ public final class Habanero {
     /**
      * Remember to close stream before leaving it to GC.
      *
-     * @param type
-     * @param sql
-     * @param args
-     * @return
+     * @param <T> result type
+     * @param type result type as Class
+     * @param sql the SQL
+     * @param args sql arguments
+     * @return a stream of T
      */
     public <T> Stream<T> queryManyCall(final Class<T> type, final String sql, final Object... args) {
         return queryManyCall(sql, args).map(new SingleValueFunc<>(type));
@@ -250,11 +251,11 @@ public final class Habanero {
     }
 
     /**
-     * Remember to close stream before leaving it to GC.
+     * Remember to close stream before leaving it to GC. Do not call next() on the ResultSet.
      *
-     * @param sql
-     * @param args
-     * @return
+     * @param sql the SQL
+     * @param args sql arguments
+     * @return a stream of resultSet
      */
     public Stream<ResultSet> queryManyCall(final String sql, final Object... args) {
         return queryMany(c -> c.prepareCall(sql), args);

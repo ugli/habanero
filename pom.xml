@@ -150,6 +150,9 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<encoding>UTF8</encoding>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
