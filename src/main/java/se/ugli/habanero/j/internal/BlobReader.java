@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
 
-import se.ugli.commons.InputStreams;
 import se.ugli.habanero.j.HabaneroException;
+import se.ugli.java.io.InputStreams;
 
 public class BlobReader {
 

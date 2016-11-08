@@ -1,7 +1,7 @@
 package se.ugli.habanero.j.typeadaptors;
 
-import se.ugli.commons.Id;
 import se.ugli.habanero.j.TypeAdaptor;
+import se.ugli.java.util.Id;
 
 public class IdTypeAdaptor implements TypeAdaptor {
 

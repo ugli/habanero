@@ -9,16 +9,16 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
-import se.ugli.commons.Resource;
 import se.ugli.habanero.j.batch.Dataset;
 import se.ugli.habanero.j.batch.SqlScript;
 import se.ugli.habanero.j.datasource.DataSourceDelegate;
 import se.ugli.habanero.j.datasource.H2DataSource;
+import se.ugli.java.io.Resource;
 
 public class HabaneroTestRunner extends BlockJUnit4ClassRunner {
 
     private static final DataSourceDelegate dataSourceDelegate = new DataSourceDelegate();
-    private static ThreadLocal<DataSourceDelegate> threadLocal = new ThreadLocal<DataSourceDelegate>();
+    private static ThreadLocal<DataSourceDelegate> threadLocal = new ThreadLocal<>();
 
     public static Optional<DataSource> getDataSource() {
         final DataSource dataSource = threadLocal.get();
@@ -44,12 +44,12 @@ public class HabaneroTestRunner extends BlockJUnit4ClassRunner {
         threadLocal.set(null);
     }
 
-    private void runDataSet(final DataSource dataSource, final String dataset) {
+    private static void runDataSet(final DataSource dataSource, final String dataset) {
         if (dataset != null && !dataset.equals(HabaneroTestConfig.NO_RESOURCE))
             Dataset.apply(dataSource).exec(Resource.apply(dataset));
     }
 
-    private void runSchema(final DataSource dataSource, final String schema) {
+    private static void runSchema(final DataSource dataSource, final String schema) {
         if (schema != null && !schema.equals(HabaneroTestConfig.NO_RESOURCE))
             SqlScript.apply(dataSource).run(Resource.apply(schema));
     }

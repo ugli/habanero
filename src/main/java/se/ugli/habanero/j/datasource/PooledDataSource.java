@@ -4,9 +4,9 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import se.ugli.commons.Resource;
 import se.ugli.habanero.j.HabaneroException;
 import se.ugli.habanero.j.internal.HabaneroProperties;
+import se.ugli.java.io.Resources;
 
 public class PooledDataSource extends DataSourceDelegate {
 
@@ -23,15 +23,15 @@ public class PooledDataSource extends DataSourceDelegate {
     }
 
     public static DataSource apply(final Properties properties) {
-        if (Resource.classExists("com.zaxxer.hikari.HikariDataSource"))
+        if (Resources.classExists("com.zaxxer.hikari.HikariDataSource"))
             return apply(properties, Implementation.HikariCP);
-        else if (Resource.classExists("com.jolbox.bonecp.BoneCPDataSource"))
+        else if (Resources.classExists("com.jolbox.bonecp.BoneCPDataSource"))
             return apply(properties, Implementation.BoneCP);
-        else if (Resource.classExists("com.mchange.v2.c3p0.ComboPooledDataSource"))
+        else if (Resources.classExists("com.mchange.v2.c3p0.ComboPooledDataSource"))
             return apply(properties, Implementation.BoneCP);
-        else if (Resource.classExists("org.vibur.dbcp.ViburDBCPDataSource"))
+        else if (Resources.classExists("org.vibur.dbcp.ViburDBCPDataSource"))
             return apply(properties, Implementation.Vibur);
-        else if (Resource.classExists("org.apache.commons.dbcp.BasicDataSource"))
+        else if (Resources.classExists("org.apache.commons.dbcp.BasicDataSource"))
             return apply(properties, Implementation.DBCP);
         throw new HabaneroException("Please depend on a pool implementation:" + Implementation.values());
     }

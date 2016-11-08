@@ -6,10 +6,13 @@ import java.nio.charset.Charset;
 import java.sql.Clob;
 import java.sql.SQLException;
 
-import se.ugli.commons.Readers;
 import se.ugli.habanero.j.HabaneroException;
+import se.ugli.java.io.Readers;
 
 public class ClobReader {
+
+    private ClobReader() {
+    }
 
     public static String read(final Clob clob) {
         try (Reader reader = clob.getCharacterStream()) {

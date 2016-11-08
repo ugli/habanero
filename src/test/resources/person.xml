@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dataset>
 	<person name="fredde" age="44" />
+	<person name="lasse" age="43" />
 	<person name="banan" age="2" />
 	<address person="fredde" street="sveavägen"/>
+	<address person="fredde" street="götgatan"/>
+	<address person="lasse" street="långholmsgatan"/>
 </dataset>

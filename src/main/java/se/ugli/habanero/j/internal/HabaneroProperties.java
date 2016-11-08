@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
-import se.ugli.commons.Resource;
+import se.ugli.java.io.Resource;
 
 public final class HabaneroProperties {
 

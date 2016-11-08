@@ -4,10 +4,9 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static se.ugli.java.util.stream.Collectors.toImmutableList;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -15,10 +14,9 @@ import java.util.stream.Stream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.google.common.collect.Iterables;
-
 import se.ugli.habanero.j.test.HabaneroTestConfig;
 import se.ugli.habanero.j.test.HabaneroTestRunner;
+import se.ugli.java.util.ImmutableList;
 
 @RunWith(HabaneroTestRunner.class)
 @HabaneroTestConfig(schema = "/person.sql", dataset = "/person.xml")
@@ -28,17 +26,20 @@ public class HabaneroTest {
 
     @Test
     public void queryManyByType() {
-        final String sql = "select name from person";
-        final List<String> names = habanero.queryMany(String.class, sql).collect(toList());
-        assertEquals(2, names.size());
-        assertEquals("fredde", names.get(0));
-        assertEquals("banan", names.get(1));
+        try (Stream<String> stream = habanero.queryMany(String.class, "select name from person")) {
+            final List<String> names = stream.collect(toList());
+            assertEquals(3, names.size());
+            assertEquals("fredde", names.get(0));
+            assertEquals("lasse", names.get(1));
+            assertEquals("banan", names.get(2));
+        }
     }
 
     @Test(expected = HabaneroException.class)
     public void shouldQueryManyGenerateSqlError() {
-        final String sql = "select name from persons";
-        habanero.queryMany(String.class, sql);
+        try (Stream<String> stream = habanero.queryMany(String.class, "select name from persons")) {
+
+        }
     }
 
     private class Address {
@@ -49,17 +50,27 @@ public class HabaneroTest {
             this.street = street;
         }
 
+        @Override
+        public String toString() {
+            return "Address [street=" + street + "]";
+        }
+
     }
 
     private class Person {
-        final String name;
-        final Integer age;
-        final List<Address> adresses;
+        final Optional<String> name;
+        final Optional<Integer> age;
+        final ImmutableList<Address> adresses;
 
-        Person(final String name, final Integer age, final Stream<Address> adresses) {
+        Person(final Optional<String> name, final Optional<Integer> age, final Stream<Address> adresses) {
             this.name = name;
             this.age = age;
-            this.adresses = adresses != null ? adresses.collect(toList()) : Collections.emptyList();
+            this.adresses = adresses.collect(toImmutableList());
+        }
+
+        @Override
+        public String toString() {
+            return "Person [name=" + name + ", age=" + age + ", adresses=" + adresses + "]";
         }
 
     }
@@ -67,65 +78,66 @@ public class HabaneroTest {
     @Test
     public void queryManyResultSetTransform() {
         final String sql = "select name,age from person";
-        final List<Person> persons = habanero.queryMany(new ResultSetIterator<Person>() {
-
-            @Override
-            public Person nextObject(final ResultSet input) throws SQLException {
-                final String name = input.getString("name");
-                final int age = input.getInt("age");
-                return new Person(name, age, null);
+        final List<Person> persons = habanero.queryMany(sql).map(input -> {
+            try {
+                return new Person(Optional.of(input.getString("name")), Optional.of(input.getInt("age")),
+                        Stream.empty());
             }
-        }, sql).collect(toList());
-        assertEquals(2, Iterables.size(persons));
-        assertEquals("fredde", Iterables.get(persons, 0).name);
-        assertEquals(new Integer(44), Iterables.get(persons, 0).age);
-        assertEquals("banan", Iterables.get(persons, 1).name);
-        assertEquals(new Integer(2), Iterables.get(persons, 1).age);
+            catch (final SQLException e) {
+                throw new HabaneroException(e);
+            }
+        }).collect(toList());
+        assertEquals(3, persons.size());
+        assertEquals("fredde", persons.get(0).name.get());
+        assertEquals(new Integer(44), persons.get(0).age.get());
+        assertEquals("banan", persons.get(2).name.get());
+        assertEquals(new Integer(2), persons.get(2).age.get());
     }
 
     @Test
     public void queryManyResultMapTransform() {
         final String sql = "select name,age from person";
-        final List<Person> persons = habanero.queryMany(new TypedMapIterator<Person>() {
-
-            @Override
-            public Person nextObject(final TypedMap input) {
-                final String name = input.get("name");
-                final Integer age = input.get("age");
-                return new Person(name, age, null);
-            }
-
-        }, sql).collect(toList());
-        assertEquals(2, Iterables.size(persons));
-        assertEquals("fredde", Iterables.get(persons, 0).name);
-        assertEquals(new Integer(44), Iterables.get(persons, 0).age);
-        assertEquals("banan", Iterables.get(persons, 1).name);
-        assertEquals(new Integer(2), Iterables.get(persons, 1).age);
+        final List<Person> persons = habanero.queryMany(sql).map(new ResultTupleFactory()).map(input -> {
+            return new Person(input.get(String.class, "name"), input.get(Integer.class, "age"), Stream.empty());
+        }).collect(toList());
+        assertEquals(3, persons.size());
+        assertEquals("fredde", persons.get(0).name.get());
+        assertEquals(new Integer(44), persons.get(0).age.get());
+        assertEquals("banan", persons.get(2).name.get());
+        assertEquals(new Integer(2), persons.get(2).age.get());
     }
 
-    Group<Person> personGrouping = Group.by(Person.class, "name", "age")
-            .with((cxt, typedMap) -> Optional
-                    .of(new Person(typedMap.get("name"), typedMap.get("age"), cxt.groupBy(Address.class, "street")
-                            .with(() -> typedMap.getOptional(String.class, "street").map(Address::new)))));
+    Group<Person> personGrouping = Group.by(Person.class, "name")
+            .with((cxt1,
+                    rt1) -> Optional.of(new Person(rt1.get(String.class, "name"), rt1.get(Integer.class, "age"),
+                            cxt1.groupBy(Address.class, "street")
+                                    .with((cxt2, rt2) -> rt2.get(String.class, "street").map(Address::new)))));
 
     @Test
     public void queryManyGroup() {
         String sql = "select name,age,street from person ";
         sql += "left join address on name=person";
         final List<Person> persons = habanero.queryMany(personGrouping, sql).collect(toList());
-        assertEquals(2, Iterables.size(persons));
+        assertEquals(3, persons.size());
         {
-            final Person person = Iterables.get(persons, 0);
-            assertEquals("fredde", person.name);
-            assertEquals(new Integer(44), person.age);
-            assertEquals(1, Iterables.size(person.adresses));
-            assertEquals("sveavägen", person.adresses.iterator().next().street);
+            final Person person = persons.get(0);
+            assertEquals("fredde", person.name.get());
+            assertEquals(new Integer(44), person.age.get());
+            assertEquals(2, person.adresses.size());
+            assertEquals("sveavägen", person.adresses.get(0).street);
+            assertEquals("götgatan", person.adresses.get(1).street);
         }
         {
-            final Person person = Iterables.get(persons, 1);
-            assertEquals("banan", person.name);
-            assertEquals(new Integer(2), person.age);
-            assertEquals(0, Iterables.size(person.adresses));
+            final Person person = persons.get(1);
+            assertEquals("lasse", person.name.get());
+            assertEquals(new Integer(43), person.age.get());
+            assertEquals("långholmsgatan", person.adresses.iterator().next().street);
+        }
+        {
+            final Person person = persons.get(2);
+            assertEquals("banan", person.name.get());
+            assertEquals(new Integer(2), person.age.get());
+            assertEquals(true, person.adresses.isEmpty());
         }
     }
 
@@ -137,10 +149,11 @@ public class HabaneroTest {
         final Optional<Person> opt = habanero.queryOne(personGrouping, sql, "fredde");
         assertTrue(opt.isPresent());
         final Person person = opt.get();
-        assertEquals("fredde", person.name);
-        assertEquals(new Integer(44), person.age);
-        assertEquals(1, Iterables.size(person.adresses));
-        assertEquals("sveavägen", person.adresses.iterator().next().street);
+        assertEquals("fredde", person.name.get());
+        assertEquals(new Integer(44), person.age.get());
+        assertEquals(2, person.adresses.size());
+        assertEquals("götgatan", person.adresses.get(1).street);
+        assertEquals("sveavägen", person.adresses.get(0).street);
     }
 
     @Test
@@ -172,4 +185,11 @@ public class HabaneroTest {
         assertEquals(1, habanero.update("insert into person(name,age) values(?,?)", "urban", null));
         assertFalse(habanero.queryOne(Integer.class, "select age from person where name=?", "urban").isPresent());
     }
+
+    @Test(expected = HabaneroException.class)
+    public void shoulThrow() {
+        final String sql = "select name,age from personX";
+        habanero.queryMany(sql);
+    }
+
 }

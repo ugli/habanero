@@ -19,11 +19,11 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import se.ugli.commons.Resource;
 import se.ugli.habanero.j.HabaneroException;
 import se.ugli.habanero.j.batch.BatchItem.BatchItemBuilder;
 import se.ugli.habanero.j.metadata.MetaData;
 import se.ugli.habanero.j.metadata.SqlType;
+import se.ugli.java.io.Resource;
 
 public class Dataset {
 

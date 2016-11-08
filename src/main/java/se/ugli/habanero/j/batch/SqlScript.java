@@ -8,9 +8,9 @@ import java.util.Scanner;
 
 import javax.sql.DataSource;
 
-import se.ugli.commons.Resource;
 import se.ugli.habanero.j.Habanero;
 import se.ugli.habanero.j.HabaneroException;
+import se.ugli.java.io.Resource;
 
 public class SqlScript {
 

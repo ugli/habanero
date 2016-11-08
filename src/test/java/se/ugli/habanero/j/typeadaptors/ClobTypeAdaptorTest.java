@@ -8,8 +8,8 @@ import java.util.Optional;
 
 import org.junit.Test;
 
-import se.ugli.commons.Resource;
 import se.ugli.habanero.j.Habanero;
+import se.ugli.java.io.Resource;
 
 public class ClobTypeAdaptorTest {
 
