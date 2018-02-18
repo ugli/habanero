@@ -6,7 +6,7 @@
 	<artifactId>habanero-java</artifactId>
 	<packaging>jar</packaging>
 	<name>Habanero for Java</name>
-	<version>1.8.1.0</version>
+	<version>1.8.1.1</version>
 	<description>Habanero for Java</description>
 	<url>https://github.com/ugli/habanero-java</url>
 	<licenses>
