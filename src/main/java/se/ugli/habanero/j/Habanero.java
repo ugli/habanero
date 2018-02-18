@@ -2,6 +2,7 @@ package se.ugli.habanero.j;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.StreamSupport.stream;
+import static se.ugli.java.lang.AutoCloseables.safeClose;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -14,9 +15,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.sql.DataSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import se.ugli.habanero.j.batch.Batch;
 import se.ugli.habanero.j.batch.BatchItem;
@@ -35,10 +33,10 @@ import se.ugli.habanero.j.typeadaptors.IdTypeAdaptor;
 import se.ugli.habanero.j.typeadaptors.JodaTimeAdaptor;
 import se.ugli.habanero.j.typeadaptors.NumberTypeAdaptor;
 import se.ugli.java.io.Resources;
+import se.ugli.java.util.stream.ResourceStream;
 
 public final class Habanero {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     public final DataSource dataSource;
 
     private Habanero(final DataSource dataSource) {
@@ -156,15 +154,6 @@ public final class Habanero {
         }
     }
 
-    /**
-     * Remember to close stream before leaving it to GC.
-     *
-     * @param <T> result type
-     * @param type result type as Class
-     * @param sql the SQL
-     * @param args sql arguments
-     * @return a stream of T
-     */
     public <T> Stream<T> queryMany(final Class<T> type, final String sql, final Object... args) {
         return queryMany(sql, args).map(new SingleValueFunc<>(type));
     }
@@ -175,31 +164,8 @@ public final class Habanero {
         }
     }
 
-    /**
-     * Remember to close stream before leaving it to GC. Do not call next() on the ResultSet.
-     *
-     * @param sql the SQL
-     * @param args sql arguments
-     * @return a stream of resultSet
-     */
     public Stream<ResultSet> queryMany(final String sql, final Object... args) {
         return queryMany(c -> c.prepareStatement(sql), args);
-    }
-
-    private class ClosableContainer<T extends AutoCloseable> {
-
-        T value;
-
-        void close() {
-            if (value != null)
-                try {
-                    value.close();
-                }
-                catch (final Exception e) {
-                    logger.warn(e.getMessage(), e);
-                }
-        }
-
     }
 
     @FunctionalInterface
@@ -208,25 +174,21 @@ public final class Habanero {
         PreparedStatement prepare(Connection connection) throws SQLException;
     }
 
+    @SuppressWarnings("resource")
     private Stream<ResultSet> queryMany(final PrepereStatement prepereStatement, final Object... args) {
-        final ClosableContainer<Connection> connection = new ClosableContainer<>();
-        final ClosableContainer<PreparedStatement> statement = new ClosableContainer<>();
-        final ClosableContainer<ResultSet> resultSet = new ClosableContainer<>();
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
         try {
-            connection.value = dataSource.getConnection();
-            statement.value = prepereStatement.prepare(connection.value);
-            prepareStatement(statement.value, args);
-            resultSet.value = statement.value.executeQuery();
-            return stream(new ResultSetSpliterator(resultSet.value), false).onClose(() -> {
-                resultSet.close();
-                statement.close();
-                connection.close();
-            });
+            connection = dataSource.getConnection();
+            statement = prepereStatement.prepare(connection);
+            prepareStatement(statement, args);
+            resultSet = statement.executeQuery();
+            final Stream<ResultSet> stream = stream(new ResultSetSpliterator(resultSet), false);
+            return new ResourceStream<>(stream, true, resultSet, statement, connection);
         }
         catch (final SQLException e) {
-            resultSet.close();
-            statement.close();
-            connection.close();
+            safeClose(resultSet, statement, connection);
             throw new HabaneroException(e);
         }
     }
